@@ -15,23 +15,22 @@
 </head>
 <body>
 <div class="wrapper">
-    <h2 id="form-title">লগইন করুন - সামির হোসেন</h2>
+    <h2 id="form-title">লগইন করুন</h2>
     
     <div id="auth-form">
-        <input type="text" id="username" placeholder="আপনার নাম (শুধু রেজিস্ট্রেশনের সময়)">
+        <input type="text" id="username" placeholder="আপনার নাম" style="display: none;">
         <input type="email" id="email" placeholder="আপনার জিমেইল">
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
         <button id="main-btn" onclick="processAuth()">লগইন</button>
         
         <div id="options">
             <span class="link" onclick="setMode('signup')">নতুন অ্যাকাউন্ট খুলুন</span> | 
-            <span class="link" onclick="setMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</span>
+            <span class="link" onclick="setMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</span>
         </div>
     </div>
 
     <div id="dashboard" class="hidden">
         <h3>স্বাগতম, সামির হোসেন!</h3>
-        <p>আপনার ব্যক্তিগত মিডিয়া ড্যাশবোর্ড।</p>
         <button onclick="location.reload()">লগ আউট</button>
     </div>
 </div>
@@ -40,7 +39,7 @@
     let mode = 'login';
     function setMode(m) {
         mode = m;
-        document.getElementById('form-title').innerText = (m === 'signup') ? "নতুন অ্যাকাউন্ট তৈরি" : (m === 'forgot') ? "পাসওয়ার্ড রিসেট" : "লগইন করুন";
+        document.getElementById('form-title').innerText = (m === 'signup') ? "নতুন অ্যাকাউন্ট তৈরি" : (m === 'forgot') ? "পাসওয়ার্ড রিসেট" : "লগইন করুন";
         document.getElementById('main-btn').innerText = (m === 'signup') ? "রেজিস্ট্রেশন করুন" : (m === 'forgot') ? "রিসেট লিংক পাঠান" : "লগইন";
         document.getElementById('username').style.display = (m === 'signup') ? "block" : "none";
     }
@@ -50,7 +49,13 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        const endpoint = (mode === 'signup') ? '/api/register' : (mode === 'forgot') ? '/api/forgot-password' : '/api/login';
+        // রেজিস্ট্রেশনের সময় পাসওয়ার্ড চেক করুন (অন্তত ৬ অক্ষর)
+        if (mode === 'signup' && password.length < 6) {
+            alert("পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে!");
+            return;
+        }
+
+        const endpoint = (mode === 'signup') ? '/api/register' : '/api/login';
         
         try {
             const response = await fetch(endpoint, {
@@ -67,7 +72,7 @@
                     document.getElementById('dashboard').classList.remove('hidden');
                 }
             } else {
-                alert(data.error || "কিছু ভুল হয়েছে!");
+                alert(data.error || "অপারেশন ব্যর্থ হয়েছে!");
             }
         } catch (err) {
             alert("সার্ভারে কানেক্ট করা যাচ্ছে না!");
