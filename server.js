@@ -13,7 +13,7 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
-    auth: { user: "mdrj4328@gmail.com", pass: "arrkfvypjupjxhdw" }
+    auth: { user: "mdrj4328@gmail.com", pass: "dhszflvrybtfeeto" } // নতুন পাসওয়ার্ড
 });
 
 // লগইন ও রেজিস্ট্রেশন
@@ -22,65 +22,44 @@ app.post('/api/auth', async (req, res) => {
     try {
         if (type === 'register') {
             const existing = await User.findOne({ email });
-            if (existing) return res.status(400).json({ error: "এই ইমেইলে অলরেডি একাউন্ট আছে!" });
-            
+            if (existing) return res.status(400).json({ error: "ইমেইলটি অলরেডি রেজিস্টার্ড!" });
             const newUser = new User({ email, password });
             await newUser.save();
             return res.json({ message: "একাউন্ট তৈরি সফল!" });
         }
         const user = await User.findOne({ email, password });
-        if (!user) return res.status(401).json({ error: "ভুল তথ্য" });
+        if (!user) return res.status(401).json({ error: "ভুল ইমেইল বা পাসওয়ার্ড" });
         res.json({ success: true, message: "লগইন সফল!", email: user.email });
     } catch (err) {
         res.status(500).json({ error: "সার্ভার এরর" });
     }
 });
 
-// ফরগেট পাসওয়ার্ড
+// ফরগেট পাসওয়ার্ড
 app.post('/api/forgot', async (req, res) => {
     const { email } = req.body;
-    try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ error: "এই ইমেইলটি আমাদের ডাটাবেজে নেই" });
-        
-        await transporter.sendMail({
-            from: "mdrj4328@gmail.com",
-            to: email,
-            subject: "আপনার সামির হোসেন পোর্টাল পাসওয়ার্ড",
-            text: `আপনার বর্তমান পাসওয়ার্ড হলো: ${user.password}`
-        });
-        res.json({ message: "আপনার পাসওয়ার্ড জিমেইলে পাঠানো হয়েছে!" });
-    } catch (err) {
-        res.status(500).json({ error: "ইমেইল পাঠাতে সমস্যা হয়েছে" });
-    }
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: "ইউজার পাওয়া যায়নি" });
+    
+    await transporter.sendMail({
+        from: "mdrj4328@gmail.com",
+        to: email,
+        subject: "আপনার পাসওয়ার্ড",
+        text: `আপনার বর্তমান পাসওয়ার্ড হলো: ${user.password}`
+    });
+    res.json({ message: "আপনার পাসওয়ার্ড জিমেইলে পাঠানো হয়েছে!" });
 });
 
-// ফাইল আপলোড রাউট
+// ফাইল লিস্ট ও আপলোড রাউট
+app.post('/api/files', async (req, res) => {
+    const user = await User.findOne({ email: req.body.email });
+    res.json({ files: user ? (user.files || []) : [] });
+});
+
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const { email, category } = req.body;
-    await User.updateOne({ email }, { $push: { files: { filename: req.file.originalname, category, path: req.file.path } } });
+    await User.updateOne({ email }, { $push: { files: { filename: req.file.originalname, category } } });
     res.json({ message: "আপলোড সফল!" });
 });
 
-// পাসওয়ার্ড পরিবর্তন রাউট
-app.post('/api/change-password', async (req, res) => {
-    const { email, oldPassword, newPassword } = req.body;
-    const user = await User.findOne({ email, password: oldPassword });
-    if (!user) return res.status(401).json({ error: "পুরানো পাসওয়ার্ড ভুল!" });
-    user.password = newPassword;
-    await user.save();
-    res.json({ message: "পাসওয়ার্ড পরিবর্তন সফল!" });
-});
-
-// ফাইল লিস্ট দেখার রাউট
-app.post('/api/files', async (req, res) => {
-    try {
-        const user = await User.findOne({ email: req.body.email });
-        if (!user) return res.status(404).json({ files: [] });
-        res.json({ files: user.files || [] });
-    } catch (err) {
-        res.status(500).json({ files: [] });
-    }
-});
-
-app.listen(10000, () => console.log("সামির হোসেন পোর্টাল সচল!"));
+app.listen(10000, () => console.log("পোর্টাল সচল!"));
