@@ -11,6 +11,8 @@
         button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
         .link { font-size: 13px; color: #94a3b8; cursor: pointer; margin-top: 15px; display: inline-block; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .grid-btn { background: #334155; border: 1px solid #475569; padding: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -31,7 +33,16 @@
 
     <div id="dashboard" class="hidden">
         <h3>স্বাগতম, সামির হোসেন!</h3>
-        <button onclick="location.reload()">লগ আউট</button>
+        <p>আপনার ড্যাশবোর্ড অপশনসমূহ:</p>
+        
+        <div class="grid-container">
+            <button class="grid-btn" onclick="alert('মিডিয়া ম্যানেজার ওপেন...')">১. মিডিয়া ম্যানেজার</button>
+            <button class="grid-btn" onclick="alert('ফাইল আপলোড ওপেন...')">২. ফাইল আপলোড</button>
+            <button class="grid-btn" onclick="alert('আপনার প্রোফাইল...')">৩. প্রোফাইল</button>
+            <button class="grid-btn" onclick="alert('ডাটাবেজ স্ট্যাটাস...')">৪. ডাটাবেজ</button>
+            <button class="grid-btn" onclick="alert('সিকিউরিটি সেটিংস...')">৫. সেটিংস</button>
+            <button class="grid-btn" onclick="location.reload()" style="background: #ef4444;">৬. লগ আউট</button>
+        </div>
     </div>
 </div>
 
@@ -49,7 +60,6 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         
-        // রেজিস্ট্রেশনের সময় পাসওয়ার্ড চেক করুন (অন্তত ৬ অক্ষর)
         if (mode === 'signup' && password.length < 6) {
             alert("পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে!");
             return;
@@ -72,7 +82,7 @@
                     document.getElementById('dashboard').classList.remove('hidden');
                 }
             } else {
-                alert(data.error || "অপারেশন ব্যর্থ হয়েছে!");
+                alert(data.error || "অপারেশন ব্যর্থ হয়েছে!");
             }
         } catch (err) {
             alert("সার্ভারে কানেক্ট করা যাচ্ছে না!");
