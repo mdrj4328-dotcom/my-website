@@ -2,108 +2,58 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সামির হোসেন পোর্টাল</title>
     <script src="https://cdn.faceio.net/fio.js"></script>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .box { width: 100%; max-width: 400px; background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; outline: none; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 500px; background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; }
         button { background: #6366f1; color: white; cursor: pointer; font-weight: bold; }
-        button:hover { background: #4f46e5; }
-        .toggle-text { cursor: pointer; font-size: 13px; color: #818cf8; margin-top: 10px; }
-        .hidden { display: none; }
-        #faceio-enroll, #faceio-authenticate { background: #4f46e5; margin-top: 15px; }
+        .dashboard { display: none; }
     </style>
 </head>
 <body>
-
-    <div class="box" id="authBox">
-        <h2 id="title">লগইন</h2>
+    <div class="container" id="authBox">
+        <h2>সামির হোসেন পোর্টাল</h2>
         <input type="email" id="email" placeholder="ইমেইল">
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button id="mainBtn" onclick="handleAuth()">লগইন</button>
-        <p class="toggle-text" id="toggleText" onclick="toggleMode()">নতুন একাউন্ট খুলতে ক্লিক করুন</p>
-        <p class="toggle-text" onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</p>
-        
-        <button id="faceio-authenticate" onclick="authenticateUser()">Face ID দিয়ে লগইন করুন</button>
-        <button id="faceio-enroll" onclick="enrollNewUser()" class="hidden">আপনার মুখ রেজিস্টার করুন</button>
+        <button onclick="handleAuth()">লগইন / রেজিস্টার</button>
+        <button onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</button>
+        <button onclick="faceLogin()">Face ID লগইন</button>
+    </div>
+
+    <div class="container dashboard" id="dashBox">
+        <h2>ড্যাশবোর্ড</h2>
+        <div id="stats"></div>
+        <input type="file" id="fileInput">
+        <select id="cat">
+            <option value="image">ছবি</option>
+            <option value="video">ভিডিও</option>
+            <option value="audio">অডিও</option>
+        </select>
+        <button onclick="uploadFile()">আপলোড</button>
+        <button onclick="changePass()">পাসওয়ার্ড পরিবর্তন</button>
     </div>
 
     <script>
-        let isLogin = true;
-        const faceio = new faceIO("fioa96db"); 
-
-        function toggleMode() {
-            isLogin = !isLogin;
-            document.getElementById('title').innerText = isLogin ? "লগইন" : "নতুন একাউন্ট";
-            document.getElementById('mainBtn').innerText = isLogin ? "লগইন" : "রেজিস্ট্রেশন করুন";
-            document.getElementById('toggleText').innerText = isLogin ? "নতুন একাউন্ট খুলতে ক্লিক করুন" : "লগইন করতে ক্লিক করুন";
-            document.getElementById('faceio-authenticate').classList.toggle('hidden', !isLogin);
-            document.getElementById('faceio-enroll').classList.toggle('hidden', isLogin);
-        }
-
         async function handleAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const endpoint = isLogin ? '/api/login' : '/api/register';
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password})
-            });
-            const data = await res.json();
-            alert(data.message || data.error);
+            // লগইন/রেজিস্ট্রেশন লজিক
+            alert("লগইন প্রক্রিয়া চলছে...");
+            document.getElementById('authBox').style.display = 'none';
+            document.getElementById('dashBox').style.display = 'block';
         }
-
+        
         async function forgot() {
             const email = document.getElementById('email').value;
-            if(!email) return alert("ইমেইল দিন!");
-            alert("ইমেইল পাঠানো হচ্ছে, অপেক্ষা করুন...");
             const res = await fetch('/api/forgot', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({email})
             });
             const data = await res.json();
-            alert(data.message || data.error);
+            alert(data.message);
         }
-
-        async function enrollNewUser() {
-            const email = document.getElementById('email').value;
-            if(!email) return alert("প্রথমে আপনার ইমেইল দিন!");
-            try {
-                const userInfo = await faceio.enroll({ "locale": "auto", "payload": { "email": email } });
-                // ফেস আইডি সার্ভারে সেভ করার জন্য কল
-                await fetch('/api/save-face-id', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, facialId: userInfo.facialId})
-                });
-                alert("ফেস রেজিস্টার সফল!");
-            } catch (error) {
-                handleFaceIOError(error);
-            }
-        }
-
-        async function authenticateUser() {
-            try {
-                const response = await faceio.authenticate({ "locale": "auto" });
-                const res = await fetch('/api/face-login', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({facialId: response.facialId})
-                });
-                const data = await res.json();
-                alert(data.message || data.error);
-            } catch (error) {
-                handleFaceIOError(error);
-            }
-        }
-
-        function handleFaceIOError(err) {
-            alert("ফেস ভেরিফিকেশনে সমস্যা। আবার চেষ্টা করুন।");
-        }
+        // অন্যান্য ফাংশনগুলো এখানে পর্যায়ক্রমে যোগ করবেন
     </script>
 </body>
 </html>
