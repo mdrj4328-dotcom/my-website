@@ -4,67 +4,49 @@
     <meta charset="UTF-8">
     <title>সামির হোসেন - আলটিমেট মিডিয়া পোর্টাল</title>
     <style>
-        :root { --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b); --card-bg: rgba(255, 255, 255, 0.08); --accent-color: #6366f1; }
-        body { background: var(--bg-gradient); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; font-family: sans-serif; }
-        .wrapper { width: 100%; max-width: 450px; background: var(--card-bg); padding: 35px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15); }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #6366f1; --success: #10b981; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
+        .wrapper { width: 100%; max-width: 600px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .hidden { display: none; }
-        input, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; }
-        button { background: var(--accent-color); color: white; font-weight: bold; cursor: pointer; }
-        .link-text { text-align: center; font-size: 13px; color: #a5b4fc; cursor: pointer; margin-top: 10px; }
-        .drop-zone { border: 2px dashed var(--accent-color); padding: 30px; text-align: center; cursor: pointer; border-radius: 12px; margin: 20px 0; background: rgba(99, 102, 241, 0.1); }
+        /* স্টোরেজ মিটার */
+        .meter { height: 10px; background: #334; border-radius: 5px; margin: 15px 0; overflow: hidden; }
+        .fill { height: 100%; background: var(--success); width: 30%; }
+        /* ড্র্যাগ-ড্রপ */
+        .drop-zone { border: 2px dashed var(--accent); padding: 40px; text-align: center; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        /* গ্যালারি */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .item { background: #334155; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; }
     </style>
 </head>
 <body>
-<div class="wrapper">
-    <!-- অথেনটিকেশন বক্স -->
-    <div id="auth-box">
-        <h2 id="auth-title" style="text-align:center;">লগইন করুন</h2>
-        <input type="text" id="username" placeholder="ইউজারনেম (শুধু রেজিস্ট্রেশনের জন্য)">
-        <input type="email" id="email" placeholder="জিমেইল">
-        <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button id="auth-btn" onclick="submitAuth()">লগইন করুন</button>
-        
-        <div class="link-text" id="toggle-link" onclick="toggleAuth()">নতুন অ্যাকাউন্ট তৈরি করুন</div>
-        <div class="link-text" id="forgot-link" onclick="forgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</div>
-    </div>
 
-    <!-- ড্যাশবোর্ড বক্স -->
-    <div id="dashboard-box" class="hidden">
-        <h3>ক্লাউড স্টোরেজ (আনলিমিটেড)</h3>
-        <div style="height:8px; background:#334; border-radius:4px; margin:15px 0;">
-            <div style="width:10%; height:100%; background:#10b981;"></div>
+<div class="wrapper">
+    <h2 style="text-align:center;">সামির হোসেন</h2>
+    
+    <div id="dashboard">
+        <div class="meter"><div class="fill"></div></div>
+        <p style="font-size: 12px;">স্টোরেজ: ৩০% ব্যবহৃত (আনলিমিটেড স্পেস)</p>
+
+        <div class="drop-zone" id="drop-zone">ফাইল এখানে ড্রপ করুন</div>
+        <input type="file" id="file-input" class="hidden">
+
+        <div class="grid" id="media-grid">
+            <div class="item">🖼️ ছবি.jpg <br> <button>🔗</button> ⭐</div>
+            <div class="item">🎥 ভিডিও.mp4 <br> <button>🔗</button> ⭐</div>
+            <div class="item">🎵 অডিও.mp3 <br> <button>🔗</button> ⭐</div>
         </div>
-        <div class="drop-zone" id="drop-zone">ফাইল টেনে আনুন অথবা ক্লিক করুন</div>
-        <input type="file" id="file-input" style="display:none">
-        <button onclick="logout()" style="background:#ef4444; margin-top:20px;">লগআউট</button>
     </div>
 </div>
 
 <script>
-    let isLogin = true;
-    function toggleAuth() {
-        isLogin = !isLogin;
-        document.getElementById('auth-title').innerText = isLogin ? "লগইন করুন" : "রেজিস্ট্রেশন করুন";
-        document.getElementById('auth-btn').innerText = isLogin ? "লগইন করুন" : "রেজিস্ট্রেশন করুন";
-        document.getElementById('toggle-link').innerText = isLogin ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "লগইন পেজে ফিরে যান";
-    }
-
-    function forgotPassword() {
-        alert("আপনার জিমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!");
-    }
-
-    async function submitAuth() {
-        // এখানে আপনার সার্ভার কল হবে
-        document.getElementById('auth-box').classList.add('hidden');
-        document.getElementById('dashboard-box').classList.remove('hidden');
-    }
-
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
+
     dropZone.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => alert("আপলোড হচ্ছে: " + e.target.files[0].name);
-    
-    function logout() { location.reload(); }
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.background = "#2d3748"; };
+    dropZone.ondragleave = () => dropZone.style.background = "transparent";
+    dropZone.ondrop = (e) => { e.preventDefault(); alert("ফাইল আপলোড হচ্ছে..."); };
 </script>
+
 </body>
 </html>
