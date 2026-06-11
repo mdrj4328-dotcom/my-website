@@ -36,7 +36,7 @@
         <h3>স্বাগতম, সামির হোসেন!</h3>
         <p>মোট ফাইল: <span id="file-count">0</span></p>
         
-        <div class="grid-container">
+        <div id="btn-container" class="grid-container">
             <button class="grid-btn" onclick="apiAction('media')">১. মিডিয়া ম্যানেজার</button>
             <button class="grid-btn" onclick="apiAction('upload')">২. ফাইল আপলোড</button>
             <button class="grid-btn" onclick="apiAction('profile')">৩. প্রোফাইল</button>
@@ -44,6 +44,8 @@
             <button class="grid-btn" onclick="apiAction('settings')">৫. সেটিংস</button>
             <button class="grid-btn" onclick="location.reload()" style="background: #ef4444;">৬. লগ আউট</button>
         </div>
+        
+        <div id="content-display" style="margin-top:20px;"></div>
         <div id="file-list" class="file-list"></div>
     </div>
 </div>
@@ -65,30 +67,42 @@
     }
 
     function apiAction(action) {
-        switch(action) {
-            case 'media': window.location.href = '/media-manager'; break;
-            case 'upload': 
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if(file) {
-                        fileCount++;
-                        document.getElementById('file-count').innerText = fileCount;
-                        const list = document.getElementById('file-list');
-                        list.innerHTML += `
-                            <div class="file-item">
-                                <span>${file.name.substring(0, 15)}...</span>
-                                <button onclick="alert('ডাউনলোড হচ্ছে: ${file.name}')">ডাউনলোড</button>
-                            </div>`;
-                    }
-                };
-                input.click();
-                break;
-            case 'profile': window.location.href = '/my-profile'; break;
-            case 'db': window.location.href = '/db-status'; break;
-            case 'settings': window.location.href = '/settings-panel'; break;
-            default: alert("এই অপশনটি এখনো তৈরি করা হচ্ছে!");
+        const display = document.getElementById('content-display');
+        const btnContainer = document.getElementById('btn-container');
+
+        if (action === 'upload') {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if(file) {
+                    fileCount++;
+                    document.getElementById('file-count').innerText = fileCount;
+                    const list = document.getElementById('file-list');
+                    list.innerHTML += `
+                        <div class="file-item">
+                            <span>${file.name.substring(0, 15)}...</span>
+                            <button onclick="alert('ডাউনলোড হচ্ছে: ${file.name}')">ডাউনলোড</button>
+                        </div>`;
+                }
+            };
+            input.click();
+            return;
+        }
+
+        const contentMap = {
+            'media': '<h3>মিডিয়া ম্যানেজার</h3><p>এখানে আপনার আপলোড করা ফাইলগুলো থাকবে।</p>',
+            'profile': '<h3>প্রোফাইল</h3><p>সামির হোসেন (অ্যাডমিন)</p>',
+            'db': '<h3>ডাটাবেজ</h3><p>কানেকশন স্ট্যাটাস: অনলাইন</p>',
+            'settings': '<h3>সেটিংস</h3><p>পোর্টাল কনফিগারেশন প্যানেল।</p>'
+        };
+
+        if (contentMap[action]) {
+            btnContainer.style.display = 'none';
+            display.innerHTML = `
+                ${contentMap[action]}
+                <button onclick="document.getElementById('btn-container').style.display='grid'; document.getElementById('content-display').innerHTML='';" style="background: #6366f1;">ফিরে যান</button>
+            `;
         }
     }
 </script>
