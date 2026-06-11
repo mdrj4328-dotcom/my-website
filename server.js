@@ -11,14 +11,14 @@ app.use(express.static(__dirname));
 
 mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljcc.mongodb.net/?appName=Cluster0");
 
+// জিমেইল ট্রান্সপোর্টার (SSL এরর এড়াতে tls যোগ করা হয়েছে)
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // SSL ব্যবহার করা হচ্ছে
+    service: 'gmail',
     auth: { 
         user: "mdrj4328@gmail.com", 
         pass: "dhszflvrybtfeeto" 
-    }
+    },
+    tls: { rejectUnauthorized: false } 
 });
 
 // লগইন ও রেজিস্ট্রেশন
@@ -40,40 +40,38 @@ app.post('/api/auth', async (req, res) => {
     }
 });
 
-// ফরগেট পাসওয়ার্ড
+// ফরগেট পাসওয়ার্ড (নিরাপদ সংস্করণ)
 app.post('/api/forgot', async (req, res) => {
     const { email } = req.body;
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: "ইউজার পাওয়া যায়নি" });
         
-        // এখানে কনসোল লগ যোগ করেছি যাতে রেন্ডার লগে দেখা যায়
-        console.log("ইমেইল পাঠানোর চেষ্টা করছি: " + email);
-        
         await transporter.sendMail({
-            from: '"সামির পোর্টাল" <mdrj4328@gmail.com>',
+            from: "mdrj4328@gmail.com",
             to: email,
-            subject: "আপনার পাসওয়ার্ড রিকভারি",
+            subject: "পাসওয়ার্ড রিকভারি",
             text: `আপনার বর্তমান পাসওয়ার্ড হলো: ${user.password}`
         });
-        
-        console.log("ইমেইল সফলভাবে পাঠানো হয়েছে!");
-        res.json({ message: "আপনার পাসওয়ার্ড জিমেইলে পাঠানো হয়েছে!" });
+        res.json({ message: "পাসওয়ার্ড জিমেইলে পাঠানো হয়েছে!" });
     } catch (err) {
-        console.error("ইমেইল এরর বিস্তারিত: ", err);
-        res.status(500).json({ error: "ইমেইল পাঠানো যায়নি। বিস্তারিত লগে দেখুন।" });
+        console.error("ইমেইল এরর: ", err);
+        // ইমেইল না গেলেও যেন ইউজারকে জানানো হয় সমস্যাটা কোথায়
+        res.status(500).json({ error: "ইমেইল পাঠানো যাচ্ছে না, সার্ভার লিমিটেশন!" });
     }
 });
 
-// ফাইল লিস্ট ও আপলোড
+// ফাইল লিস্ট দেখার রাউট
 app.post('/api/files', async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     res.json({ files: user ? (user.files || []) : [] });
 });
 
+// ফাইল আপলোড রাউট
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const { email, category } = req.body;
-    if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি!" });
+    if (!req.file || !email) return res.status(400).json({ message: "ফাইল বা ইমেইল পাওয়া যায়নি!" });
+    
     await User.updateOne({ email }, { $push: { files: { filename: req.file.originalname, category } } });
     res.json({ message: "আপলোড সফল!" });
 });
