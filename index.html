@@ -2,48 +2,61 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সামির হোসেন পোর্টাল</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 400px; background: #1e293b; padding: 25px; border-radius: 20px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; }
-        button { background: #6366f1; color: white; cursor: pointer; }
+        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { width: 100%; max-width: 400px; background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; outline: none; }
+        button { background: #6366f1; color: white; cursor: pointer; font-weight: bold; }
+        button:hover { background: #4f46e5; }
+        .toggle-text { cursor: pointer; font-size: 13px; color: #818cf8; margin-top: 10px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="container" id="loginBox">
-        <h2>সামির হোসেন পোর্টাল</h2>
+
+    <div class="box" id="authBox">
+        <h2 id="title">লগইন</h2>
         <input type="email" id="email" placeholder="ইমেইল">
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button onclick="login()">লগইন (ফেস ভেরিফাই)</button>
-        <p onclick="forgot()" style="cursor:pointer; font-size:12px;">পাসওয়ার্ড ভুলে গেছেন?</p>
-    </div>
-
-    <div class="container hidden" id="dashboard">
-        <h2>স্বাগতম, সামির হোসেন!</h2>
-        <button onclick="alert('আপলোড সিস্টেম সচল')">ফাইল আপলোড</button>
-        <button onclick="location.reload()" style="background:#ef4444;">লগ আউট</button>
+        <button id="mainBtn" onclick="handleAuth()">লগইন</button>
+        <p class="toggle-text" id="toggleText" onclick="toggleMode()">নতুন একাউন্ট খুলতে ক্লিক করুন</p>
+        <p class="toggle-text" onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</p>
     </div>
 
     <script>
-        async function login() {
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('title').innerText = isLogin ? "লগইন" : "নতুন একাউন্ট";
+            document.getElementById('mainBtn').innerText = isLogin ? "লগইন" : "রেজিস্ট্রেশন করুন";
+            document.getElementById('toggleText').innerText = isLogin ? "নতুন একাউন্ট খুলতে ক্লিক করুন" : "লগইন করতে ক্লিক করুন";
+        }
+
+        async function handleAuth() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            alert("ক্যামেরা অন হচ্ছে...");
-            const res = await fetch('/api/login', {
+            const endpoint = isLogin ? '/api/login' : '/api/register';
+
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({email, password})
             });
-            if(res.ok) {
-                document.getElementById('loginBox').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('hidden');
-            } else alert("ভুল তথ্য!");
+            
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(res.ok && isLogin) {
+                alert("লগইন সফল!");
+                // এখানে সফল লগইনের পর ড্যাশবোর্ডে রিডাইরেক্ট করার কোড বসবে
+            }
         }
 
         async function forgot() {
             const email = document.getElementById('email').value;
+            if(!email) return alert("ইমেইল দিন!");
             const res = await fetch('/api/forgot', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
