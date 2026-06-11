@@ -12,7 +12,7 @@
         .hidden { display: none; }
         .link { font-size: 13px; color: #94a3b8; cursor: pointer; margin-top: 15px; display: inline-block; }
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .grid-btn { background: #334155; border: 1px solid #475569; padding: 10px; font-size: 12px; }
+        .grid-btn { background: #334155; border: 1px solid #475569; padding: 10px; font-size: 12px; border-radius: 6px; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,11 +36,11 @@
         <p>আপনার ড্যাশবোর্ড অপশনসমূহ:</p>
         
         <div class="grid-container">
-            <button class="grid-btn" onclick="alert('মিডিয়া ম্যানেজার ওপেন...')">১. মিডিয়া ম্যানেজার</button>
-            <button class="grid-btn" onclick="alert('ফাইল আপলোড ওপেন...')">২. ফাইল আপলোড</button>
-            <button class="grid-btn" onclick="alert('আপনার প্রোফাইল...')">৩. প্রোফাইল</button>
-            <button class="grid-btn" onclick="alert('ডাটাবেজ স্ট্যাটাস...')">৪. ডাটাবেজ</button>
-            <button class="grid-btn" onclick="alert('সিকিউরিটি সেটিংস...')">৫. সেটিংস</button>
+            <button class="grid-btn" onclick="apiAction('/api/media')">১. মিডিয়া ম্যানেজার</button>
+            <button class="grid-btn" onclick="apiAction('/api/upload')">২. ফাইল আপলোড</button>
+            <button class="grid-btn" onclick="apiAction('/api/profile')">৩. প্রোফাইল</button>
+            <button class="grid-btn" onclick="apiAction('/api/db-status')">৪. ডাটাবেজ</button>
+            <button class="grid-btn" onclick="apiAction('/api/settings')">৫. সেটিংস</button>
             <button class="grid-btn" onclick="location.reload()" style="background: #ef4444;">৬. লগ আউট</button>
         </div>
     </div>
@@ -86,6 +86,17 @@
             }
         } catch (err) {
             alert("সার্ভারে কানেক্ট করা যাচ্ছে না!");
+        }
+    }
+
+    // নতুন ফিচার: প্রতিটি বাটন ক্লিক করলে সার্ভারে রিকোয়েস্ট পাঠাবে
+    async function apiAction(path) {
+        try {
+            const response = await fetch(path, { method: 'GET' });
+            const data = await response.json();
+            alert(data.message || "এই ফিচারটি এখন তৈরি করা হচ্ছে...");
+        } catch (err) {
+            alert("এই সেকশনটি সার্ভারের সাথে এখনো যুক্ত করা হয়নি!");
         }
     }
 </script>
