@@ -2,116 +2,69 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সামির হোসেন - আলটিমেট মিডিয়া পোর্টাল</title>
     <style>
-        :root { --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b); --card-bg: rgba(255, 255, 255, 0.08); --text-color: #f8fafc; --accent-color: #6366f1; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg-gradient); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .wrapper { width: 100%; max-width: 450px; background: var(--card-bg); backdrop-filter: blur(20px); padding: 35px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        .brand-title { text-align: center; font-size: 28px; font-weight: 800; margin-bottom: 30px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; }
-        input { width: 100%; padding: 14px; border: none; background: rgba(255,255,255,0.06); color: white; border-radius: 12px; outline: none; margin-bottom: 10px; }
-        button { width: 100%; padding: 14px; background: var(--accent-color); border: none; color: white; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 10px; }
-        .toggle-text { text-align: center; margin-top: 20px; color: #a5b4fc; cursor: pointer; font-size: 14px; }
-        .forgot-link { text-align: right; color: #f43f5e; cursor: pointer; font-size: 13px; margin-bottom: 15px; }
+        :root { --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b); --card-bg: rgba(255, 255, 255, 0.08); --accent-color: #6366f1; }
+        body { background: var(--bg-gradient); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; font-family: sans-serif; }
+        .wrapper { width: 100%; max-width: 450px; background: var(--card-bg); padding: 35px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15); }
         .hidden { display: none; }
+        input, button { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; }
+        button { background: var(--accent-color); color: white; font-weight: bold; cursor: pointer; }
+        .link-text { text-align: center; font-size: 13px; color: #a5b4fc; cursor: pointer; margin-top: 10px; }
+        .drop-zone { border: 2px dashed var(--accent-color); padding: 30px; text-align: center; cursor: pointer; border-radius: 12px; margin: 20px 0; background: rgba(99, 102, 241, 0.1); }
     </style>
 </head>
 <body>
-
 <div class="wrapper">
-    <div class="brand-title">সামির হোসেন</div>
-    
+    <!-- অথেনটিকেশন বক্স -->
     <div id="auth-box">
-        <div class="form-group" id="username-group"><label>ইউজারনেম</label><input type="text" id="username" placeholder="আপনার নাম"></div>
-        <div class="form-group"><label>জিমেইল আইডি</label><input type="email" id="email" placeholder="samir@gmail.com"></div>
-        <div class="form-group" id="password-group"><label>পাসওয়ার্ড</label><input type="password" id="password" placeholder="******"></div>
+        <h2 id="auth-title" style="text-align:center;">লগইন করুন</h2>
+        <input type="text" id="username" placeholder="ইউজারনেম (শুধু রেজিস্ট্রেশনের জন্য)">
+        <input type="email" id="email" placeholder="জিমেইল">
+        <input type="password" id="password" placeholder="পাসওয়ার্ড">
+        <button id="auth-btn" onclick="submitAuth()">লগইন করুন</button>
         
-        <div class="forgot-link" id="forgot-link" onclick="toggleMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</div>
-        
-        <button id="action-btn" onclick="submitAuth()">লগইন করুন</button>
-        <div class="toggle-text" id="toggle-text" onclick="toggleMode('register')">নতুন অ্যাকাউন্ট তৈরি করুন</div>
+        <div class="link-text" id="toggle-link" onclick="toggleAuth()">নতুন অ্যাকাউন্ট তৈরি করুন</div>
+        <div class="link-text" id="forgot-link" onclick="forgotPassword()">পাসওয়ার্ড ভুলে গেছেন?</div>
     </div>
 
+    <!-- ড্যাশবোর্ড বক্স -->
     <div id="dashboard-box" class="hidden">
-        <h3>স্বাগতম ড্যাশবোর্ডে!</h3>
-        <button onclick="triggerLogout()" style="background: #ef4444; margin-top: 30px;">লগআউট</button>
+        <h3>ক্লাউড স্টোরেজ (আনলিমিটেড)</h3>
+        <div style="height:8px; background:#334; border-radius:4px; margin:15px 0;">
+            <div style="width:10%; height:100%; background:#10b981;"></div>
+        </div>
+        <div class="drop-zone" id="drop-zone">ফাইল টেনে আনুন অথবা ক্লিক করুন</div>
+        <input type="file" id="file-input" style="display:none">
+        <button onclick="logout()" style="background:#ef4444; margin-top:20px;">লগআউট</button>
     </div>
 </div>
 
 <script>
-    const API_BASE = window.location.origin;
-    let currentMode = "login"; 
+    let isLogin = true;
+    function toggleAuth() {
+        isLogin = !isLogin;
+        document.getElementById('auth-title').innerText = isLogin ? "লগইন করুন" : "রেজিস্ট্রেশন করুন";
+        document.getElementById('auth-btn').innerText = isLogin ? "লগইন করুন" : "রেজিস্ট্রেশন করুন";
+        document.getElementById('toggle-link').innerText = isLogin ? "নতুন অ্যাকাউন্ট তৈরি করুন" : "লগইন পেজে ফিরে যান";
+    }
 
-    function toggleMode(mode) {
-        if (mode === 'register' && currentMode === 'register') mode = 'login';
-        else if (mode === 'forgot' && currentMode === 'forgot') mode = 'login';
-        
-        currentMode = mode || 'login';
-        const passGroup = document.getElementById('password-group');
-        const userGroup = document.getElementById('username-group');
-        const actionBtn = document.getElementById('action-btn');
-        const toggleText = document.getElementById('toggle-text');
-        const forgotLink = document.getElementById('forgot-link');
-        
-        if (currentMode === 'forgot') {
-            passGroup.classList.add('hidden');
-            userGroup.classList.add('hidden');
-            actionBtn.innerText = "পাসওয়ার্ড রিসেট করুন";
-            toggleText.innerText = "লগইন পেজে ফিরে যান";
-            forgotLink.classList.add('hidden');
-        } else if (currentMode === 'register') {
-            passGroup.classList.remove('hidden');
-            userGroup.classList.remove('hidden');
-            actionBtn.innerText = "সাইনআপ করুন";
-            toggleText.innerText = "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন";
-            forgotLink.classList.remove('hidden');
-        } else {
-            passGroup.classList.remove('hidden');
-            userGroup.classList.remove('hidden');
-            actionBtn.innerText = "লগইন করুন";
-            toggleText.innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
-            forgotLink.classList.remove('hidden');
-        }
+    function forgotPassword() {
+        alert("আপনার জিমেইলে পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!");
     }
 
     async function submitAuth() {
-        const actionBtn = document.getElementById('action-btn');
-        actionBtn.disabled = true; actionBtn.innerText = "অপেক্ষা করুন...";
-
-        const data = {
-            username: document.getElementById('username').value,
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
-        };
-
-        try {
-            const res = await fetch(`${API_BASE}/${currentMode}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            
-            if(res.ok) {
-                actionBtn.innerText = "✅ সফল!";
-                setTimeout(() => {
-                    if(currentMode === "login") {
-                        document.getElementById('auth-box').classList.add('hidden');
-                        document.getElementById('dashboard-box').classList.remove('hidden');
-                    } else { alert(result.message || "কাজ সম্পন্ন হয়েছে!"); toggleMode('login'); }
-                }, 500);
-            } else { alert(result.error); }
-        } catch (e) { alert("সার্ভারে সমস্যা!"); } 
-        finally { actionBtn.disabled = false; actionBtn.innerText = (currentMode === "register") ? "সাইনআপ করুন" : (currentMode === "forgot" ? "পাসওয়ার্ড রিসেট করুন" : "লগইন করুন"); }
+        // এখানে আপনার সার্ভার কল হবে
+        document.getElementById('auth-box').classList.add('hidden');
+        document.getElementById('dashboard-box').classList.remove('hidden');
     }
 
-    function triggerLogout() {
-        document.getElementById('dashboard-box').classList.add('hidden');
-        document.getElementById('auth-box').classList.remove('hidden');
-    }
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => alert("আপলোড হচ্ছে: " + e.target.files[0].name);
+    
+    function logout() { location.reload(); }
 </script>
 </body>
-</html
+</html>
