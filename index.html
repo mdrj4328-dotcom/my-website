@@ -3,46 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>সামির হোসেন পোর্টাল</title>
-    <script src="https://cdn.faceio.net/fio.js"></script>
     <style>
         body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .container { width: 100%; max-width: 500px; background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: none; }
-        button { background: #6366f1; color: white; cursor: pointer; font-weight: bold; }
-        .dashboard { display: none; }
+        .box { background: #1e293b; padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; }
+        button { background: #6366f1; color: white; cursor: pointer; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
-    <div class="container" id="authBox">
-        <h2>সামির হোসেন পোর্টাল</h2>
+    <div class="box" id="loginBox">
+        <h2>সামির হোসেন</h2>
         <input type="email" id="email" placeholder="ইমেইল">
-        <input type="password" id="password" placeholder="পাসওয়ার্ড">
-        <button onclick="handleAuth()">লগইন / রেজিস্টার</button>
-        <button onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</button>
-        <button onclick="faceLogin()">Face ID লগইন</button>
+        <input type="password" id="password" placeholder="পাসওয়ার্ড">
+        <button onclick="auth('login')">লগইন</button>
+        <button onclick="auth('register')">নতুন একাউন্ট</button>
+        <button onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</button>
     </div>
 
-    <div class="container dashboard" id="dashBox">
+    <div class="box hidden" id="dashBox">
         <h2>ড্যাশবোর্ড</h2>
-        <div id="stats"></div>
-        <input type="file" id="fileInput">
-        <select id="cat">
-            <option value="image">ছবি</option>
-            <option value="video">ভিডিও</option>
-            <option value="audio">অডিও</option>
-        </select>
-        <button onclick="uploadFile()">আপলোড</button>
-        <button onclick="changePass()">পাসওয়ার্ড পরিবর্তন</button>
+        <p>ছবি, ভিডিও ও অডিও আপলোড এবং সেটিংস এখানে পাবেন।</p>
+        <button onclick="location.reload()">লগআউট</button>
     </div>
 
     <script>
-        async function handleAuth() {
-            // লগইন/রেজিস্ট্রেশন লজিক
-            alert("লগইন প্রক্রিয়া চলছে...");
-            document.getElementById('authBox').style.display = 'none';
-            document.getElementById('dashBox').style.display = 'block';
+        async function auth(type) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, password, type})
+            });
+            const data = await res.json();
+            alert(data.message || data.error);
+            if(data.success) {
+                document.getElementById('loginBox').classList.add('hidden');
+                document.getElementById('dashBox').classList.remove('hidden');
+            }
         }
-        
         async function forgot() {
             const email = document.getElementById('email').value;
             const res = await fetch('/api/forgot', {
@@ -53,7 +53,6 @@
             const data = await res.json();
             alert(data.message);
         }
-        // অন্যান্য ফাংশনগুলো এখানে পর্যায়ক্রমে যোগ করবেন
     </script>
 </body>
 </html>
