@@ -4,49 +4,75 @@
     <meta charset="UTF-8">
     <title>সামির হোসেন - আলটিমেট মিডিয়া পোর্টাল</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #6366f1; --success: #10b981; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; min-height: 100vh; padding: 20px; }
-        .wrapper { width: 100%; max-width: 600px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #6366f1; }
+        body { background: var(--bg); color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .wrapper { width: 100%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
-        /* স্টোরেজ মিটার */
-        .meter { height: 10px; background: #334; border-radius: 5px; margin: 15px 0; overflow: hidden; }
-        .fill { height: 100%; background: var(--success); width: 30%; }
-        /* ড্র্যাগ-ড্রপ */
-        .drop-zone { border: 2px dashed var(--accent); padding: 40px; text-align: center; border-radius: 15px; cursor: pointer; transition: 0.3s; }
-        /* গ্যালারি */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
-        .item { background: #334155; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; }
+        .link { font-size: 13px; color: #94a3b8; cursor: pointer; margin-top: 15px; display: inline-block; }
     </style>
 </head>
 <body>
-
 <div class="wrapper">
-    <h2 style="text-align:center;">সামির হোসেন</h2>
+    <h2 id="form-title">লগইন করুন - সামির হোসেন</h2>
     
-    <div id="dashboard">
-        <div class="meter"><div class="fill"></div></div>
-        <p style="font-size: 12px;">স্টোরেজ: ৩০% ব্যবহৃত (আনলিমিটেড স্পেস)</p>
-
-        <div class="drop-zone" id="drop-zone">ফাইল এখানে ড্রপ করুন</div>
-        <input type="file" id="file-input" class="hidden">
-
-        <div class="grid" id="media-grid">
-            <div class="item">🖼️ ছবি.jpg <br> <button>🔗</button> ⭐</div>
-            <div class="item">🎥 ভিডিও.mp4 <br> <button>🔗</button> ⭐</div>
-            <div class="item">🎵 অডিও.mp3 <br> <button>🔗</button> ⭐</div>
+    <div id="auth-form">
+        <input type="text" id="username" placeholder="আপনার নাম (শুধু রেজিস্ট্রেশনের সময়)">
+        <input type="email" id="email" placeholder="আপনার জিমেইল">
+        <input type="password" id="password" placeholder="পাসওয়ার্ড">
+        <button id="main-btn" onclick="processAuth()">লগইন</button>
+        
+        <div id="options">
+            <span class="link" onclick="setMode('signup')">নতুন অ্যাকাউন্ট খুলুন</span> | 
+            <span class="link" onclick="setMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</span>
         </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <h3>স্বাগতম, সামির হোসেন!</h3>
+        <p>আপনার ব্যক্তিগত মিডিয়া ড্যাশবোর্ড।</p>
+        <button onclick="location.reload()">লগ আউট</button>
     </div>
 </div>
 
 <script>
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
+    let mode = 'login';
+    function setMode(m) {
+        mode = m;
+        document.getElementById('form-title').innerText = (m === 'signup') ? "নতুন অ্যাকাউন্ট তৈরি" : (m === 'forgot') ? "পাসওয়ার্ড রিসেট" : "লগইন করুন";
+        document.getElementById('main-btn').innerText = (m === 'signup') ? "রেজিস্ট্রেশন করুন" : (m === 'forgot') ? "রিসেট লিংক পাঠান" : "লগইন";
+        document.getElementById('username').style.display = (m === 'signup') ? "block" : "none";
+    }
 
-    dropZone.onclick = () => fileInput.click();
-    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.background = "#2d3748"; };
-    dropZone.ondragleave = () => dropZone.style.background = "transparent";
-    dropZone.ondrop = (e) => { e.preventDefault(); alert("ফাইল আপলোড হচ্ছে..."); };
+    async function processAuth() {
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        const endpoint = (mode === 'signup') ? '/api/register' : (mode === 'forgot') ? '/api/forgot-password' : '/api/login';
+        
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                alert(data.message);
+                if (mode === 'login') {
+                    document.getElementById('auth-form').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                }
+            } else {
+                alert(data.error || "কিছু ভুল হয়েছে!");
+            }
+        } catch (err) {
+            alert("সার্ভারে কানেক্ট করা যাচ্ছে না!");
+        }
+    }
 </script>
-
 </body>
 </html>
