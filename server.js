@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const path = require('path'); // এটি যোগ করা হলো
+const path = require('path');
 const User = require('./User');
 const app = express();
 
@@ -10,7 +10,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.use(express.json());
 
-// আপডেট: এখন সার্ভার সরাসরি মেইন ফোল্ডার থেকেই index.html ফাইলটি খুঁজে পাবে
+// সার্ভার সরাসরি মেইন ফোল্ডার থেকেই index.html ফাইলটি খুঁজে পাবে
 app.use(express.static(__dirname));
 
 // ডাটাবেজ কানেকশন
@@ -40,6 +40,18 @@ app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ email: req.body.email, password: req.body.password });
     if (!user) return res.status(401).json({ error: "ভুল তথ্য" });
     res.json({ success: true, email: user.email });
+});
+
+// ফেস আইডি দিয়ে লগইন রুট (নতুন যোগ করা হয়েছে)
+app.post('/api/face-login', async (req, res) => {
+    const { facialId } = req.body;
+    try {
+        const user = await User.findOne({ facialId });
+        if (!user) return res.status(404).json({ error: "ফেস আইডি পাওয়া যায়নি। প্রথমে মুখ রেজিস্টার করুন।" });
+        res.json({ success: true, email: user.email, message: "ফেস আইডি দিয়ে লগইন সফল!" });
+    } catch (error) {
+        res.status(500).json({ error: "সার্ভার সমস্যা, পরে চেষ্টা করুন।" });
+    }
 });
 
 // ফরগেট পাসওয়ার্ড রুট
