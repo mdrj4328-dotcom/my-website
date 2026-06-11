@@ -9,7 +9,7 @@
         input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; }
         button { background: #6366f1; color: white; cursor: pointer; }
         .hidden { display: none; }
-        ul { text-align: left; }
+        ul { text-align: left; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -25,10 +25,6 @@
     <div class="box hidden" id="dashBox">
         <h2>ড্যাশবোর্ড - সামির হোসেন</h2>
         
-        <div id="stats" style="margin-bottom: 20px; font-size: 14px;">
-            <p>আপনার ড্যাশবোর্ড লোড হচ্ছে...</p>
-        </div>
-
         <input type="file" id="fileInput">
         <select id="category">
             <option value="image">ছবি</option>
@@ -51,9 +47,12 @@
     </div>
 
     <script>
+        // লগইন ও রেজিস্ট্রেশন ফাংশন
         async function auth(type) {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            if(!email) { alert("দয়া করে ইমেইল দিন"); return; }
+            
             const res = await fetch('/api/auth', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -64,14 +63,17 @@
             if(data.success) {
                 document.getElementById('loginBox').classList.add('hidden');
                 document.getElementById('dashBox').classList.remove('hidden');
-                loadFiles(); // লগইন হলে ফাইল লোড হবে
+                loadFiles(); // লগইন সফল হলে ফাইল লিস্ট দেখাবে
             }
         }
 
+        // ফাইল আপলোড ফাংশন
         async function uploadFile() {
             const file = document.getElementById('fileInput').files[0];
             const category = document.getElementById('category').value;
             const email = document.getElementById('email').value;
+            if(!file) { alert("দয়া করে একটি ফাইল সিলেক্ট করুন"); return; }
+            
             const formData = new FormData();
             formData.append('file', file);
             formData.append('category', category);
@@ -80,9 +82,10 @@
             const res = await fetch('/api/upload', { method: 'POST', body: formData });
             const data = await res.json();
             alert(data.message);
-            loadFiles();
+            loadFiles(); // আপলোড শেষে লিস্ট আপডেট হবে
         }
 
+        // ফাইল লোড করার ফাংশন
         async function loadFiles() {
             const email = document.getElementById('email').value;
             const res = await fetch('/api/files', {
@@ -93,15 +96,21 @@
             const data = await res.json();
             const list = document.getElementById('files');
             list.innerHTML = "";
-            data.files.forEach(f => {
-                list.innerHTML += `<li>${f.filename} (${f.category})</li>`;
-            });
+            if(data.files && data.files.length > 0) {
+                data.files.forEach(f => {
+                    list.innerHTML += `<li>${f.filename} (${f.category})</li>`;
+                });
+            } else {
+                list.innerHTML = "<li>কোন ফাইল নেই</li>";
+            }
         }
 
+        // পাসওয়ার্ড পরিবর্তন ফাংশন
         async function changePass() {
             const email = document.getElementById('email').value;
             const oldPassword = document.getElementById('oldPass').value;
             const newPassword = document.getElementById('newPass').value;
+            
             const res = await fetch('/api/change-password', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -111,8 +120,11 @@
             alert(data.message || data.error);
         }
 
+        // ফরগেট পাসওয়ার্ড ফাংশন
         async function forgot() {
             const email = document.getElementById('email').value;
+            if(!email) { alert("দয়া করে ইমেইল বক্সটি পূরণ করুন"); return; }
+            
             const res = await fetch('/api/forgot', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
