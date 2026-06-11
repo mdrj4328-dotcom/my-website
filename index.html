@@ -5,390 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সামির হোসেন - আলটিমেট মিডিয়া পোর্টাল</title>
     <style>
-        :root { 
-            --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b); 
-            --card-bg: rgba(255, 255, 255, 0.08); 
-            --text-color: #f8fafc; 
-            --border-color: rgba(255, 255, 255, 0.15);
-            --accent-color: #6366f1;
-            --input-bg: rgba(255, 255, 255, 0.06);
-        }
-        .light-theme { 
-            --bg-gradient: linear-gradient(135deg, #e0e7ff, #eef2f3); 
-            --card-bg: rgba(255, 255, 255, 0.85); 
-            --text-color: #1e293b; 
-            --border-color: rgba(0, 0, 0, 0.08);
-            --accent-color: #4f46e5;
-            --input-bg: rgba(255, 255, 255, 0.9);
-        }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-        
-        body { 
-            background: var(--bg-gradient); 
-            color: var(--text-color); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 20px;
-        }
-        
-        .wrapper { 
-            width: 100%; max-width: 450px; 
-            background: var(--card-bg); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            padding: 35px; border-radius: 24px; 
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-            position: relative;
-        }
-        
-        .theme-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 22px; cursor: pointer; width: auto; }
-        
-        .brand-title { text-align: center; font-size: 28px; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
-        .brand-subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 30px; font-weight: 500; }
-        
-        .form-group { margin-bottom: 22px; text-align: left; position: relative; }
-        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; opacity: 0.9; }
-        
-        input[type="email"], input[type="password"], input[type="file"] { 
-            width: 100%; padding: 14px 16px; 
-            border: 1px solid var(--border-color); 
-            background: var(--input-bg); 
-            color: var(--text-color); 
-            border-radius: 12px; font-size: 15px; outline: none;
-            position: relative; z-index: 10;
-        }
-        input:focus { border-color: var(--accent-color); box-shadow: 0 0 10px rgba(99, 102, 241, 0.4); }
-        
-        .eye-icon { position: absolute; right: 15px; top: 40px; cursor: pointer; opacity: 0.7; font-size: 18px; z-index: 20; user-select: none; }
-
-        button { 
-            width: 100%; padding: 14px; background: linear-gradient(135deg, #6366f1, #4f46e5); 
-            border: none; color: white; font-size: 16px; border-radius: 12px; cursor: pointer; 
-            font-weight: 700; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            position: relative; z-index: 10;
-        }
-        button:hover { background: linear-gradient(135deg, #4f46e5, #3730a3); }
-        
-        .toggle-text { text-align: center; margin-top: 20px; color: #a5b4fc; cursor: pointer; font-size: 14px; font-weight: 600; position: relative; z-index: 10; }
-        .toggle-text:hover { text-decoration: underline; color: white; }
-        .forgot-link { text-align: right; color: #f43f5e; cursor: pointer; font-size: 13px; margin-top: -12px; margin-bottom: 20px; font-weight: 600; position: relative; z-index: 10; }
+        :root { --bg-gradient: linear-gradient(135deg, #0f172a, #1e1b4b); --card-bg: rgba(255, 255, 255, 0.08); --text-color: #f8fafc; --accent-color: #6366f1; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg-gradient); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .wrapper { width: 100%; max-width: 450px; background: var(--card-bg); backdrop-filter: blur(20px); padding: 35px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .brand-title { text-align: center; font-size: 28px; font-weight: 800; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; border: none; background: rgba(255,255,255,0.06); color: white; border-radius: 12px; outline: none; margin-bottom: 10px; }
+        button { width: 100%; padding: 14px; background: var(--accent-color); border: none; color: white; font-weight: 700; border-radius: 12px; cursor: pointer; margin-top: 10px; }
+        .toggle-text { text-align: center; margin-top: 20px; color: #a5b4fc; cursor: pointer; font-size: 14px; }
+        .forgot-link { text-align: right; color: #f43f5e; cursor: pointer; font-size: 13px; margin-bottom: 15px; }
         .hidden { display: none; }
-        
-        .counter-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; text-align: center; }
-        .counter-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; border: 1px solid var(--border-color); }
-        .light-theme .counter-card { background: #fff; }
-        .counter-num { font-size: 20px; font-weight: bold; color: var(--accent-color); margin-top: 5px; }
-
-        .category-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: rgba(0,0,0,0.15); padding: 6px; border-radius: 12px; }
-        .light-theme .category-tabs { background: rgba(0,0,0,0.05); }
-        .tab-btn { background: none; color: var(--text-color); padding: 10px 14px; font-size: 13px; border-radius: 8px; cursor: pointer; width: auto; margin: 0; flex: 1; font-weight: 600; }
-        .tab-btn.active { background: var(--accent-color); color: white; }
-        
-        .preview-section { margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px; }
-        .media-item { background: rgba(255,255,255,0.02); padding: 12px; border-radius: 14px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-        .light-theme .media-item { background: #fff; }
-        img, video { width: 100%; border-radius: 10px; margin-bottom: 10px; }
-        audio { width: 100%; margin-bottom: 10px; }
-        .media-info { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .delete-btn { background: linear-gradient(135deg, #f43f5e, #e11d48); }
-        
-        .progress-container { width: 100%; background-color: rgba(255,255,255,0.1); border-radius: 8px; margin-top: 12px; display: none; overflow: hidden; }
-        .progress-bar { width: 0%; height: 8px; background: linear-gradient(to right, #10b981, #34d399); }
-        
-        .change-pw-box { margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--border-color); }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
-    <button class="theme-btn" onclick="toggleTheme()">🌙</button>
     <div class="brand-title">সামির হোসেন</div>
-    <div id="sub-title" class="brand-subtitle">মিডিয়া আপলোড সিস্টেম</div>
-
-    <!-- অথেনটিকেশন বক্স -->
+    
     <div id="auth-box">
-        <div class="form-group">
-            <label>জিমেইল আইডি</label>
-            <input type="email" id="email" placeholder="samir@gmail.com">
-        </div>
-        <div id="password-group" class="form-group">
-            <label>পাসওয়ার্ড</label>
-            <input type="password" id="password" placeholder="******">
-            <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
-        </div>
-        <div id="forgot-btn-link" class="forgot-link" onclick="showForgotMode()">পাসওয়ার্ড ভুলে গেছেন?</div>
+        <div class="form-group" id="username-group"><label>ইউজারনেম</label><input type="text" id="username" placeholder="আপনার নাম"></div>
+        <div class="form-group"><label>জিমেইল আইডি</label><input type="email" id="email" placeholder="samir@gmail.com"></div>
+        <div class="form-group" id="password-group"><label>পাসওয়ার্ড</label><input type="password" id="password" placeholder="******"></div>
+        
+        <div class="forgot-link" id="forgot-link" onclick="toggleMode('forgot')">পাসওয়ার্ড ভুলে গেছেন?</div>
+        
         <button id="action-btn" onclick="submitAuth()">লগইন করুন</button>
-        <div class="toggle-text" id="toggle-link" onclick="toggleMode()">নতুন অ্যাকাউন্ট তৈরি করুন</div>
+        <div class="toggle-text" id="toggle-text" onclick="toggleMode('register')">নতুন অ্যাকাউন্ট তৈরি করুন</div>
     </div>
 
-    <!-- ড্যাশবোর্ড বক্স -->
     <div id="dashboard-box" class="hidden">
-        <h3 style="margin-bottom: 20px; text-align:center; font-weight:700;">স্বাগতম ড্যাশবোর্ডে!</h3>
-        
-        <div class="counter-summary">
-            <div class="counter-card">🖼️ ছবি<div class="counter-num" id="img-count">০</div></div>
-            <div class="counter-card">🎥 ভিডিও<div class="counter-num" id="vid-count">০</div></div>
-            <div class="counter-card">🎵 অডিও<div class="counter-num" id="aud-count">০</div></div>
-        </div>
-
-        <div class="form-group">
-            <label>ছবি, video বা অডিও আপলোড করুন</label>
-            <input type="file" id="file-input" accept="image/*,video/*,audio/*">
-            <div class="progress-container" id="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-        </div>
-        <button onclick="handleUpload()" style="background: linear-gradient(135deg, #10b981, #059669);">আপলোড স্টার্ট করুন</button>
-        
-        <div class="preview-section">
-            <div class="category-tabs">
-                <button class="tab-btn active" onclick="switchCategory('all', this)">সব</button>
-                <button class="tab-btn" onclick="switchCategory('image', this)">ছবি</button>
-                <button class="tab-btn" onclick="switchCategory('video', this)">ভিডিও</button>
-                <button class="tab-btn" onclick="switchCategory('audio', this)">অডিও</button>
-            </div>
-            <div id="media-list"></div>
-        </div>
-        
-        <div class="change-pw-box">
-            <h4 style="font-size: 14px; margin-bottom: 12px; font-weight:600;">🔐 সিকিউরিটি আপডেট</h4>
-            <div class="form-group"><input type="password" id="new-password" placeholder="নতুন পাসওয়ার্ড দিন"></div>
-            <button onclick="changePassword()" style="background: linear-gradient(135deg, #f59e0b, #d97706);">পাসওয়ার্ড পরিবর্তন</button>
-        </div>
-        
-        <button onclick="triggerLogout()" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-top: 30px;">লগআউট</button>
+        <h3>স্বাগতম ড্যাশবোর্ডে!</h3>
+        <button onclick="triggerLogout()" style="background: #ef4444; margin-top: 30px;">লগআউট</button>
     </div>
 </div>
 
 <script>
-    // এখানে আমরা কোনো ফিক্সড লিংক ব্যবহার না করে ডায়নামিক লোকাল ডোমেন ব্যবহার করছি
     const API_BASE = window.location.origin;
-
     let currentMode = "login"; 
-    let userToken = "";
-    let allUploadedFiles = [];
-    let selectedCategory = "all";
 
-    function toggleTheme() {
-        document.body.classList.toggle('light-theme');
-        const btn = document.querySelector('.theme-btn');
-        btn.innerText = document.body.classList.contains('light-theme') ? "🌙" : "☀️";
-    }
-
-    function togglePasswordVisibility() {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.querySelector('.eye-icon');
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            eyeIcon.innerText = "🙈";
+    function toggleMode(mode) {
+        if (mode === 'register' && currentMode === 'register') mode = 'login';
+        else if (mode === 'forgot' && currentMode === 'forgot') mode = 'login';
+        
+        currentMode = mode || 'login';
+        const passGroup = document.getElementById('password-group');
+        const userGroup = document.getElementById('username-group');
+        const actionBtn = document.getElementById('action-btn');
+        const toggleText = document.getElementById('toggle-text');
+        const forgotLink = document.getElementById('forgot-link');
+        
+        if (currentMode === 'forgot') {
+            passGroup.classList.add('hidden');
+            userGroup.classList.add('hidden');
+            actionBtn.innerText = "পাসওয়ার্ড রিসেট করুন";
+            toggleText.innerText = "লগইন পেজে ফিরে যান";
+            forgotLink.classList.add('hidden');
+        } else if (currentMode === 'register') {
+            passGroup.classList.remove('hidden');
+            userGroup.classList.remove('hidden');
+            actionBtn.innerText = "সাইনআপ করুন";
+            toggleText.innerText = "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন";
+            forgotLink.classList.remove('hidden');
         } else {
-            passwordInput.type = "password";
-            eyeIcon.innerText = "👁️";
+            passGroup.classList.remove('hidden');
+            userGroup.classList.remove('hidden');
+            actionBtn.innerText = "লগইন করুন";
+            toggleText.innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
+            forgotLink.classList.remove('hidden');
         }
-    }
-
-    function toggleMode() {
-        if (currentMode === "forgot") { showLoginMode(); return; }
-        if (currentMode === "login") {
-            currentMode = "register";
-            document.getElementById('sub-title').innerText = "নতুন মেম্বার রেজিস্ট্রেশন";
-            document.getElementById('action-btn').innerText = "সাইনআপ করুন";
-            document.getElementById('toggle-link').innerText = "ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন";
-            document.getElementById('forgot-btn-link').classList.add('hidden');
-        } else { showLoginMode(); }
-    }
-
-    function showForgotMode() {
-        currentMode = "forgot";
-        document.getElementById('sub-title').innerText = "পাসওয়ার্ড রিসেট করুন";
-        document.getElementById('password-group').classList.add('hidden');
-        document.getElementById('forgot-btn-link').classList.add('hidden');
-        document.getElementById('action-btn').innerText = "নতুন পাসওয়ার্ড দিন";
-        document.getElementById('toggle-link').innerText = "লগইন পেজে ফিরে যান";
-    }
-
-    function showLoginMode() {
-        currentMode = "login";
-        document.getElementById('sub-title').innerText = "মিডিয়া আপলোড সিস্টেম";
-        document.getElementById('password-group').classList.remove('hidden');
-        document.getElementById('forgot-btn-link').classList.remove('hidden');
-        document.getElementById('action-btn').innerText = "লগইন করুন";
-        document.getElementById('toggle-link').innerText = "নতুন অ্যাকাউন্ট তৈরি করুন";
     }
 
     async function submitAuth() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        if(!email) return alert("জিমেইল আইডি দিন!");
-        if(currentMode !== "forgot" && !password) return alert("পাসওয়ার্ড দিন!");
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.disabled = true; actionBtn.innerText = "অপেক্ষা করুন...";
 
-        let endpoint = currentMode === "register" ? '/register' : (currentMode === "forgot" ? '/forgot-password' : '/login');
-        let bodyData = currentMode === "forgot" ? { email } : { email, password };
+        const data = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
 
         try {
-            const response = await fetch(`${API_BASE}${endpoint}`, {
+            const res = await fetch(`${API_BASE}/${currentMode}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify(data)
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "ভুল হয়েছে!");
-
-            if(currentMode === "login") {
-                userToken = data.token;
-                alert("🎉 লগইন সফল হয়েছে!");
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('dashboard-box').classList.remove('hidden');
-                loadMyFiles(); 
-            } else {
-                alert(data.message || "সফল হয়েছে!");
-                showLoginMode();
-            }
-        } catch (error) { alert(error.message); }
-    }
-
-    async function changePassword() {
-        const newPassword = document.getElementById('new-password').value;
-        if(!newPassword || newPassword.length < 4) return alert("পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের দিন!");
-        try {
-            const response = await fetch(`${API_BASE}/change-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
-                body: JSON.stringify({ newPassword })
-            });
-            const data = await response.json();
-            if(!response.ok) throw new Error(data.error);
-            alert(data.message);
-            document.getElementById('new-password').value = "";
-        } catch (error) { alert(error.message); }
-    }
-
-    async function loadMyFiles() {
-        try {
-            const response = await fetch(`${API_BASE}/my-files`, {
-                headers: { 'Authorization': `Bearer ${userToken}` }
-            });
-            const data = await response.json();
-            allUploadedFiles = data.files || [];
-            updateCounters(); 
-            renderFiles();    
-        } catch (error) { console.log(error); }
-    }
-
-    function updateCounters() {
-        let imgCount = 0, vidCount = 0, audCount = 0;
-        allUploadedFiles.forEach(file => {
-            if (file.url.match(/\.(jpeg|jpg|gif|png)$/i)) imgCount++;
-            else if (file.url.match(/\.(mp4|webm|ogg|mov)$/i)) vidCount++;
-            else if (file.url.match(/\.(mp3|wav|ogg|m4a)$/i)) audCount++;
-        });
-        document.getElementById('img-count').innerText = imgCount;
-        document.getElementById('vid-count').innerText = vidCount;
-        document.getElementById('aud-count').innerText = audCount;
-    }
-
-    function switchCategory(category, element) {
-        selectedCategory = category;
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
-        renderFiles();
-    }
-
-    function renderFiles() {
-        const mediaList = document.getElementById('media-list');
-        mediaList.innerHTML = "";
-
-        const filteredFiles = allUploadedFiles.filter(file => {
-            if (selectedCategory === 'all') return true;
-            if (selectedCategory === 'image') return file.url.match(/\.(jpeg|jpg|gif|png)$/i);
-            if (selectedCategory === 'video') return file.url.match(/\.(mp4|webm|ogg|mov)$/i);
-            if (selectedCategory === 'audio') return file.url.match(/\.(mp3|wav|ogg|m4a)$/i);
-            return false;
-        });
-
-        if(filteredFiles.length === 0) {
-            mediaList.innerHTML = "<p style='font-size:13px; color:#94a3b8; text-align:center; padding: 20px;'>এই ক্যাটাগরিতে কোনো ফাইল নেই।</p>";
-            return;
-        }
-
-        filteredFiles.forEach(file => {
-            const fullUrl = `${API_BASE}${file.url}`;
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'media-item';
-            const infoHtml = `<div class="media-info"><span>📏 ${file.size}</span> <span>📅 ${file.date}</span></div>`;
+            const result = await res.json();
             
-            let mediaHtml = "";
-            if(file.url.match(/\.(jpeg|jpg|gif|png)$/i)) {
-                mediaHtml = `<img src="${fullUrl}">`;
-            } else if(file.url.match(/\.(mp4|webm|ogg|mov)$/i)) {
-                mediaHtml = `<video src="${fullUrl}" controls></video>`;
-            } else if(file.url.match(/\.(mp3|wav|ogg|m4a)$/i)) {
-                mediaHtml = `<audio src="${fullUrl}" controls></audio>`;
-            }
-
-            const deleteBtnHtml = `<button class="delete-btn" onclick="deleteFile('${file.url}')">🗑️ ফাইল মুছুন</button>`;
-            itemDiv.innerHTML = infoHtml + mediaHtml + deleteBtnHtml;
-            mediaList.appendChild(itemDiv);
-        });
-    }
-
-    function handleUpload() {
-        const fileInput = document.getElementById('file-input');
-        if(fileInput.files.length === 0) return alert("ফাইল সিলেক্ট করুন!");
-
-        const formData = new FormData();
-        formData.append('media', fileInput.files[0]);
-
-        const xhr = new XMLHttpRequest();
-        const progressContainer = document.getElementById('progress-container');
-        const progressBar = document.getElementById('progress-bar');
-        progressContainer.style.display = 'block';
-
-        xhr.upload.addEventListener('progress', (e) => {
-            if (e.lengthComputable) {
-                const percent = Math.round((e.loaded / e.total) * 100);
-                progressBar.style.width = percent + '%';
-            }
-        });
-
-        xhr.addEventListener('load', () => {
-            progressContainer.style.display = 'none';
-            progressBar.style.width = '0%';
-            const data = JSON.parse(xhr.responseText);
-            if (xhr.status >= 200 && xhr.status < 300) {
-                alert("🎉 " + data.message);
-                loadMyFiles();
-                fileInput.value = "";
-            } else { alert(data.error || "আপলোড ব্যর্থ হয়েছে"); }
-        });
-
-        xhr.open('POST', `${API_BASE}/upload`);
-        xhr.setRequestHeader('Authorization', `Bearer ${userToken}`);
-        xhr.send(formData);
-    }
-
-    async function deleteFile(fileUrl) {
-        if(!confirm("ফাইলটি ডিলিট করতে চান?")) return;
-        try {
-            const response = await fetch(`${API_BASE}/delete-file`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${userToken}` },
-                body: JSON.stringify({ fileUrl })
-            });
-            if(!response.ok) throw new Error("ডিলিট ব্যর্থ!");
-            alert("🗑️ ফাইল মুছে ফেলা হয়েছে!");
-            loadMyFiles();
-        } catch (error) { alert(error.message); }
+            if(res.ok) {
+                actionBtn.innerText = "✅ সফল!";
+                setTimeout(() => {
+                    if(currentMode === "login") {
+                        document.getElementById('auth-box').classList.add('hidden');
+                        document.getElementById('dashboard-box').classList.remove('hidden');
+                    } else { alert(result.message || "কাজ সম্পন্ন হয়েছে!"); toggleMode('login'); }
+                }, 500);
+            } else { alert(result.error); }
+        } catch (e) { alert("সার্ভারে সমস্যা!"); } 
+        finally { actionBtn.disabled = false; actionBtn.innerText = (currentMode === "register") ? "সাইনআপ করুন" : (currentMode === "forgot" ? "পাসওয়ার্ড রিসেট করুন" : "লগইন করুন"); }
     }
 
     function triggerLogout() {
-        userToken = "";
         document.getElementById('dashboard-box').classList.add('hidden');
         document.getElementById('auth-box').classList.remove('hidden');
-        showLoginMode();
     }
 </script>
 </body>
