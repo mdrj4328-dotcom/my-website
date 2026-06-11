@@ -2,13 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+const path = require('path'); // এটি যোগ করা হলো
 const User = require('./User');
 const app = express();
 
 const upload = multer({ dest: 'uploads/' });
 
 app.use(express.json());
-app.use(express.static('public'));
+
+// আপডেট: এখন সার্ভার সরাসরি মেইন ফোল্ডার থেকেই index.html ফাইলটি খুঁজে পাবে
+app.use(express.static(__dirname));
 
 // ডাটাবেজ কানেকশন
 mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljcc.mongodb.net/?appName=Cluster0")
@@ -21,11 +24,11 @@ const transporter = nodemailer.createTransport({
     auth: { user: "mdrj4328@gmail.com", pass: "arrkfvypjupjxhdw" }
 });
 
-// নতুন ইউজার রেজিস্ট্রেশন (এই অংশটি নতুন যোগ করা হয়েছে)
+// নতুন ইউজার রেজিস্ট্রেশন
 app.post('/api/register', async (req, res) => {
     const { email, password } = req.body;
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: "এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!" });
+    if (existingUser) return res.status(400).json({ error: "এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!" });
     
     const newUser = new User({ email, password });
     await newUser.save();
