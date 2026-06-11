@@ -9,8 +9,7 @@ const app = express();
 const upload = multer({ dest: 'uploads/' });
 
 app.use(express.json());
-
-// সার্ভার সরাসরি মেইন ফোল্ডার থেকেই index.html ফাইলটি খুঁজে পাবে
+// রুট ডিরেক্টরি থেকে index.html লোড করার জন্য
 app.use(express.static(__dirname));
 
 // ডাটাবেজ কানেকশন
@@ -18,43 +17,39 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("ডাটাবেজ কানেক্ট হয়েছে"))
     .catch(err => console.log(err));
 
-// জিমেইল কনফিগারেশন
+// জিমেইল কনফিগারেশন - পাসওয়ার্ডটি স্পেস ছাড়া বসানো হয়েছে
 const transporter = nodemailer.createTransport({
     service: 'gmail',
-    auth: { user: "mdrj4328@gmail.com", pass: "arrkfvypjupjxhdw" }
+    auth: { 
+        user: "mdrj4328@gmail.com", 
+        pass: "arrkfvypjupjxhdw" 
+    }
 });
 
-// নতুন ইউজার রেজিস্ট্রেশন
+// রুট: মূল পেজ
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// রেজিস্ট্রেশন
 app.post('/api/register', async (req, res) => {
     const { email, password } = req.body;
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ error: "এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!" });
+    if (existingUser) return res.status(400).json({ error: "এই ইমেইল দিয়ে অলরেডি একাউন্ট আছে!" });
     
     const newUser = new User({ email, password });
     await newUser.save();
     res.json({ message: "একাউন্ট তৈরি সফল! এখন লগইন করুন।" });
 });
 
-// লগইন রুট
+// লগইন
 app.post('/api/login', async (req, res) => {
     const user = await User.findOne({ email: req.body.email, password: req.body.password });
     if (!user) return res.status(401).json({ error: "ভুল তথ্য" });
     res.json({ success: true, email: user.email });
 });
 
-// ফেস আইডি দিয়ে লগইন রুট (নতুন যোগ করা হয়েছে)
-app.post('/api/face-login', async (req, res) => {
-    const { facialId } = req.body;
-    try {
-        const user = await User.findOne({ facialId });
-        if (!user) return res.status(404).json({ error: "ফেস আইডি পাওয়া যায়নি। প্রথমে মুখ রেজিস্টার করুন।" });
-        res.json({ success: true, email: user.email, message: "ফেস আইডি দিয়ে লগইন সফল!" });
-    } catch (error) {
-        res.status(500).json({ error: "সার্ভার সমস্যা, পরে চেষ্টা করুন।" });
-    }
-});
-
-// ফরগেট পাসওয়ার্ড রুট
+// ফরগেট পাসওয়ার্ড
 app.post('/api/forgot', async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) return res.status(404).json({ error: "ইউজার নেই" });
@@ -68,17 +63,14 @@ app.post('/api/forgot', async (req, res) => {
     res.json({ message: "পাসওয়ার্ড জিমেইলে পাঠানো হয়েছে" });
 });
 
-// ফাইল আপলোড রুট
-app.post('/api/upload', upload.single('file'), async (req, res) => {
-    const { email, category } = req.body;
-    if (!req.file) return res.status(400).send("ফাইল পাওয়া যায়নি");
-    
-    await User.updateOne({ email }, { 
-        $push: { files: { filename: req.file.originalname, category, path: req.file.path } } 
-    });
-    res.send("আপলোড সফল");
+// ফেস লগইন
+app.post('/api/face-login', async (req, res) => {
+    const { facialId } = req.body;
+    const user = await User.findOne({ facialId });
+    if (!user) return res.status(404).json({ error: "ফেস আইডি পাওয়া যায়নি।" });
+    res.json({ success: true, message: "ফেস লগইন সফল!" });
 });
 
-// রেন্ডারের জন্য ডাইনামিক পোর্ট
+// পোর্ট লিসেনিং
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`সামির হোসেন পোর্টাল ${PORT} পোর্টে সচল!`));
+app.listen(PORT, () => console.log(`সার্ভার ${PORT} পোর্টে চলছে!`));
