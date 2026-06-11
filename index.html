@@ -60,31 +60,35 @@
     }
 
     async function processAuth() {
-        // লগইন লজিক অপরিবর্তিত
         document.getElementById('auth-form').classList.add('hidden');
         document.getElementById('dashboard').classList.remove('hidden');
     }
 
     function apiAction(action) {
-        if (action === 'upload') {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if(file) {
-                    fileCount++;
-                    document.getElementById('file-count').innerText = fileCount;
-                    const list = document.getElementById('file-list');
-                    list.innerHTML += `
-                        <div class="file-item">
-                            <span>${file.name.substring(0, 15)}...</span>
-                            <button onclick="alert('ডাউনলোড হচ্ছে: ${file.name}')">ডাউনলোড</button>
-                        </div>`;
-                }
-            };
-            input.click();
-        } else {
-            alert(action + " অপশনটি বর্তমানে ডেমো মোডে আছে!");
+        switch(action) {
+            case 'media': window.location.href = '/media-manager'; break;
+            case 'upload': 
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if(file) {
+                        fileCount++;
+                        document.getElementById('file-count').innerText = fileCount;
+                        const list = document.getElementById('file-list');
+                        list.innerHTML += `
+                            <div class="file-item">
+                                <span>${file.name.substring(0, 15)}...</span>
+                                <button onclick="alert('ডাউনলোড হচ্ছে: ${file.name}')">ডাউনলোড</button>
+                            </div>`;
+                    }
+                };
+                input.click();
+                break;
+            case 'profile': window.location.href = '/my-profile'; break;
+            case 'db': window.location.href = '/db-status'; break;
+            case 'settings': window.location.href = '/settings-panel'; break;
+            default: alert("এই অপশনটি এখনো তৈরি করা হচ্ছে!");
         }
     }
 </script>
