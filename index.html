@@ -10,11 +10,11 @@
         .light-mode { --bg: #f8fafc; --card: #ffffff; }
         body { background: var(--bg); color: #fff; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; transition: 0.3s; }
         .box { background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; }
+        input, button, select, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; box-sizing: border-box; }
         button { background: var(--accent); color: white; cursor: pointer; transition: 0.3s; }
         button:hover { opacity: 0.9; }
         .hidden { display: none; }
-        ul { text-align: left; margin-top: 10px; list-style: none; }
+        ul { text-align: left; margin-top: 10px; list-style: none; padding: 0; }
         li { background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         #searchBox { border: 1px solid #475569; }
     </style>
@@ -38,7 +38,14 @@
         <button onclick="uploadFile()">আপলোড ফাইল</button>
         <input type="text" id="searchBox" placeholder="🔍 সার্চ করুন..." onkeyup="filterFiles()">
         <ul id="files"></ul>
-        <button onclick="logout()" style="background: #ef4444;">লগআউট</button>
+        
+        <div style="margin-top: 20px; border-top: 1px solid #475569; padding-top: 20px; text-align: left;">
+            <h3 style="text-align: center;">সাপোর্ট সেন্টার</h3>
+            <textarea id="supportMsg" placeholder="আপনার সমস্যাটি এখানে লিখুন..." style="height:80px;"></textarea>
+            <button onclick="sendSupport()" style="background:#4f46e5;">মেসেজ পাঠান</button>
+        </div>
+
+        <button onclick="logout()" style="background: #ef4444; margin-top: 15px;">লগআউট</button>
     </div>
 
     <script>
@@ -50,8 +57,6 @@
             document.body.classList.toggle('light-mode');
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         }
-
-        setTimeout(() => { if(!document.getElementById('loginBox').classList.contains('hidden')) logout(); }, 1800000);
 
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -100,7 +105,6 @@
             list.innerHTML = "";
             if(data.files) {
                 data.files.forEach(f => {
-                    // এখানে সংশোধন করেছি: এনকোড করে দেওয়া হয়েছে
                     list.innerHTML += `<li>${f.filename} 
                         <div>
                             <button onclick="window.open('/api/download/${encodeURIComponent(f.filename)}')" style="padding:5px; background:green">📥</button>
@@ -117,6 +121,18 @@
             const data = await res.json();
             alert(data.message);
             loadFiles();
+        }
+
+        async function sendSupport() {
+            const email = document.getElementById('email').value;
+            const msg = document.getElementById('supportMsg').value;
+            if(!msg) return alert("দয়া করে সমস্যাটি লিখুন!");
+            await fetch('/api/support', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ email, message: `সাপোর্ট: ${msg}` }) 
+            });
+            alert("মেসেজ পাঠানো হয়েছে!");
         }
 
         function filterFiles() {
