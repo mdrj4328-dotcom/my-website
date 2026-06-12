@@ -5,18 +5,21 @@ const path = require('path');
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api');
 const User = require('./User');
+// ১. Cloudinary প্যাকেজগুলো যুক্ত করা হয়েছে
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const dir = 'uploads/';
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-        cb(null, dir);
+// ২. Cloudinary কনফিগারেশন (আপনার রেন্ডারের ENV থেকে অটোমেটিক নিয়ে নেবে)
+cloudinary.config(); 
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'samir_portal_files',
+        format: async (req, file) => 'jpg',
     },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
 });
 const upload = multer({ storage: storage });
 
@@ -41,46 +44,56 @@ app.post('/api/support', async (req, res) => {
     }
 });
 
-// আপলোড রাউট - এখানে ইমেইল ফিল্টার আরও উন্নত করা হয়েছে
+// আপলোড রাউট - Cloudinary এর পাথ ব্যবহার করা হয়েছে
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     
-    // ইমেইল ক্লিন করা হচ্ছে (স্পেস সরানো এবং ছোট হাতের অক্ষর করা)
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
+    const fileUrl = req.file.path; // এটি এখন ক্লাউডিনারি লিংক
 
     try {
         const result = await User.updateOne(
             { email: userEmail }, 
-            { $push: { files: { filename: req.file.originalname, path: req.file.path } } }
+            { $push: { files: { filename: req.file.originalname, path: fileUrl } } }
         );
         
-        if (result.matchedCount > 0) { // modifiedCount এর বদলে matchedCount ব্যবহার করা ভালো
+        if (result.matchedCount > 0) {
             res.json({ message: "আপলোড সফল!" });
         } else {
-            res.status(404).json({ message: `ইউজার খুঁজে পাওয়া যায়নি: ${userEmail}` });
+            res.status(404).json({ message: `ইউজার খুঁজে পাওয়া যায়নি: ${userEmail}` });
         }
     } catch (err) {
-        res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
+        res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
     }
 });
 
+// ডাউনলোড রাউট (আপডেট করা হয়েছে যাতে ক্লাউড লিংক থেকে ফাইল খোলে)
 app.get('/api/download/:filename', async (req, res) => {
     try {
         const user = await User.findOne({ "files.filename": req.params.filename });
         if (!user) return res.status(404).send("ফাইলটি নেই");
         const file = user.files.find(f => f.filename === req.params.filename);
-        res.download(path.join(__dirname, file.path));
+        // যদি এটি ক্লাউড লিঙ্ক হয়, তবে রিডাইরেক্ট করবে
+        if (file.path.startsWith('http')) {
+            res.redirect(file.path);
+        } else {
+            res.download(path.join(__dirname, file.path));
+        }
     } catch (err) {
         res.status(500).send("ডাউনলোড এরর");
     }
 });
 
+// ডিলিট রাউট
 app.delete('/api/delete/:filename', async (req, res) => {
     try {
         const user = await User.findOne({ "files.filename": req.params.filename });
         if (user) {
             const file = user.files.find(f => f.filename === req.params.filename);
-            if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
+            // লোকাল ফাইল থাকলে ডিলিট করবে, না থাকলে ক্লাউড লিংক ইগনোর করবে
+            if (file && !file.path.startsWith('http') && fs.existsSync(file.path)) {
+                fs.unlinkSync(file.path);
+            }
             await User.updateOne({ email: user.email }, { $pull: { files: { filename: req.params.filename } } });
             res.json({ message: "মুছে ফেলা হয়েছে" });
         } else {
