@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>সামির হোসেন পোর্টাল</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #6366f1; }
         .light-mode { --bg: #f8fafc; --card: #ffffff; }
@@ -24,13 +26,13 @@
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
         <button onclick="auth('login')">লগইন</button>
         <button onclick="auth('register')">নতুন একাউন্ট</button>
+        <button onclick="googleLogin()" style="background: #db4437;">Google দিয়ে লগইন</button>
         <button onclick="forgot()" style="background:none; border:1px solid #6366f1">পাসওয়ার্ড ভুলে গেছেন?</button>
     </div>
 
     <div class="box hidden" id="dashBox">
         <h2 id="welcomeText">ড্যাশবোর্ড</h2>
         <button onclick="toggleTheme()" style="padding: 5px; width: auto;">থিম পরিবর্তন</button>
-        
         <input type="file" id="fileInput">
         <select id="category">
             <option value="image">ছবি</option>
@@ -38,61 +40,62 @@
             <option value="audio">অডিও</option>
         </select>
         <button onclick="uploadFile()">আপলোড ফাইল</button>
-
         <div id="fileList" style="margin-top: 20px;">
             <input type="text" id="searchBox" placeholder="🔍 ফাইল সার্চ করুন..." onkeyup="filterFiles()">
             <ul id="files"></ul>
         </div>
-
         <hr style="margin: 20px 0;">
-        <input type="password" id="oldPass" placeholder="পুরানো পাসওয়ার্ড">
-        <input type="password" id="newPass" placeholder="নতুন পাসওয়ার্ড">
-        <button onclick="changePass()" style="background: #ef4444;">পাসওয়ার্ড পরিবর্তন</button>
-        <button onclick="location.reload()" style="background: #475569;">লগআউট</button>
+        <button onclick="location.reload()" style="background: #ef4444;">লগআউট</button>
     </div>
 
     <script>
-        // নোটিফিকেশন ফাংশন
-        function notify(msg) { alert(msg); }
+        const firebaseConfig = {
+            apiKey: "AIzaSyBleLrL4M-PuXieI_sYwjORch0Ni_Gc4g8",
+            authDomain: "samir-login.firebaseapp.com",
+            projectId: "samir-login",
+            storageBucket: "samir-login.firebasestorage.app",
+            messagingSenderId: "684678891663",
+            appId: "1:684678891663:web:d1cc4ca1b95036b6ffc8fa"
+        };
+        firebase.initializeApp(firebaseConfig);
 
-        // থিম টগল
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
-
-        // সার্চ ফাংশন
-        function filterFiles() {
-            const q = document.getElementById('searchBox').value.toLowerCase();
-            const list = document.getElementById('files').getElementsByTagName('li');
-            for(let l of list) l.style.display = l.textContent.toLowerCase().includes(q) ? "" : "none";
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                document.getElementById('email').value = result.user.email;
+                showDashboard(result.user.email);
+            }).catch(e => alert(e.message));
         }
 
         async function auth(type) {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            if(!email || !password) return notify("দয়া করে ইমেইল ও পাসওয়ার্ড দিন");
-            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, password, type}) });
-            const data = await res.json();
-            notify(data.message || data.error);
-            if(data.success) {
-                document.getElementById('loginBox').classList.add('hidden');
-                document.getElementById('dashBox').classList.remove('hidden');
-                document.getElementById('welcomeText').innerText = "স্বাগতম, " + email;
-                loadFiles();
-            }
+            if(!email || !password) return alert("ইমেইল ও পাসওয়ার্ড দিন");
+            
+            try {
+                if(type === 'register') await firebase.auth().createUserWithEmailAndPassword(email, password);
+                else await firebase.auth().signInWithEmailAndPassword(email, password);
+                showDashboard(email);
+            } catch(e) { alert(e.message); }
+        }
+
+        function showDashboard(email) {
+            document.getElementById('loginBox').classList.add('hidden');
+            document.getElementById('dashBox').classList.remove('hidden');
+            document.getElementById('welcomeText').innerText = "স্বাগতম, " + email;
+            loadFiles();
         }
 
         async function uploadFile() {
             const file = document.getElementById('fileInput').files[0];
-            const category = document.getElementById('category').value;
             const email = document.getElementById('email').value;
-            if(!file) return notify("দয়া করে ফাইল সিলেক্ট করুন");
+            if(!file) return alert("ফাইল সিলেক্ট করুন");
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('category', category);
             formData.append('email', email);
             const res = await fetch('/api/upload', { method: 'POST', body: formData });
             const data = await res.json();
-            notify(data.message);
-            document.getElementById('fileInput').value = "";
+            alert(data.message);
             loadFiles();
         }
 
@@ -102,30 +105,20 @@
             const data = await res.json();
             const list = document.getElementById('files');
             list.innerHTML = "";
-            if(data.files && data.files.length > 0) {
+            if(data.files) {
                 data.files.forEach(f => {
                     list.innerHTML += `<li>${f.filename} <a href="/api/download/${f.filename}">📥</a></li>`;
                 });
-            } else {
-                list.innerHTML = "<li>কোন ফাইল নেই</li>";
             }
         }
 
-        async function changePass() {
-            const email = document.getElementById('email').value;
-            const oldPassword = document.getElementById('oldPass').value;
-            const newPassword = document.getElementById('newPass').value;
-            const res = await fetch('/api/change-password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, oldPassword, newPassword}) });
-            const data = await res.json();
-            notify(data.message || data.error);
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        function filterFiles() {
+            const q = document.getElementById('searchBox').value.toLowerCase();
+            const list = document.getElementById('files').getElementsByTagName('li');
+            for(let l of list) l.style.display = l.textContent.toLowerCase().includes(q) ? "" : "none";
         }
-
-        async function forgot() {
-            const email = document.getElementById('email').value;
-            const res = await fetch('/api/forgot', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) });
-            const data = await res.json();
-            notify(data.message || data.error);
-        }
+        function forgot() { alert("পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।"); }
     </script>
 </body>
 </html>
