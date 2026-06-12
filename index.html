@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <title>সামির হোসেন পোর্টাল</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .box { background: #1e293b; padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #6366f1; }
+        .light-mode { --bg: #f8fafc; --card: #ffffff; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; display: flex; justify-content: center; padding: 20px; transition: 0.3s; }
+        .box { background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; }
-        button { background: #6366f1; color: white; cursor: pointer; }
+        button { background: var(--accent); color: white; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.9; }
         .hidden { display: none; }
-        ul { text-align: left; margin-top: 10px; }
+        ul { text-align: left; margin-top: 10px; list-style: none; }
+        li { background: rgba(0,0,0,0.1); padding: 10px; margin-bottom: 5px; border-radius: 8px; display: flex; justify-content: space-between; }
+        #searchBox { border: 1px solid #475569; }
     </style>
 </head>
 <body>
@@ -19,11 +24,12 @@
         <input type="password" id="password" placeholder="পাসওয়ার্ড">
         <button onclick="auth('login')">লগইন</button>
         <button onclick="auth('register')">নতুন একাউন্ট</button>
-        <button onclick="forgot()">পাসওয়ার্ড ভুলে গেছেন?</button>
+        <button onclick="forgot()" style="background:none; border:1px solid #6366f1">পাসওয়ার্ড ভুলে গেছেন?</button>
     </div>
 
     <div class="box hidden" id="dashBox">
-        <h2>ড্যাশবোর্ড - সামির হোসেন</h2>
+        <h2 id="welcomeText">ড্যাশবোর্ড</h2>
+        <button onclick="toggleTheme()" style="padding: 5px; width: auto;">থিম পরিবর্তন</button>
         
         <input type="file" id="fileInput">
         <select id="category">
@@ -33,34 +39,43 @@
         </select>
         <button onclick="uploadFile()">আপলোড ফাইল</button>
 
-        <div id="fileList" style="margin: 20px 0; border-top: 1px solid #475569; padding-top: 10px;">
-            <h4>আপনার ফাইলসমূহ:</h4>
+        <div id="fileList" style="margin-top: 20px;">
+            <input type="text" id="searchBox" placeholder="🔍 ফাইল সার্চ করুন..." onkeyup="filterFiles()">
             <ul id="files"></ul>
         </div>
 
-        <hr>
+        <hr style="margin: 20px 0;">
         <input type="password" id="oldPass" placeholder="পুরানো পাসওয়ার্ড">
         <input type="password" id="newPass" placeholder="নতুন পাসওয়ার্ড">
         <button onclick="changePass()" style="background: #ef4444;">পাসওয়ার্ড পরিবর্তন</button>
-        
         <button onclick="location.reload()" style="background: #475569;">লগআউট</button>
     </div>
 
     <script>
+        // নোটিফিকেশন ফাংশন
+        function notify(msg) { alert(msg); }
+
+        // থিম টগল
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+
+        // সার্চ ফাংশন
+        function filterFiles() {
+            const q = document.getElementById('searchBox').value.toLowerCase();
+            const list = document.getElementById('files').getElementsByTagName('li');
+            for(let l of list) l.style.display = l.textContent.toLowerCase().includes(q) ? "" : "none";
+        }
+
         async function auth(type) {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            if(!email || !password) { alert("দয়া করে ইমেইল ও পাসওয়ার্ড দিন"); return; }
-            const res = await fetch('/api/auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, password, type})
-            });
+            if(!email || !password) return notify("দয়া করে ইমেইল ও পাসওয়ার্ড দিন");
+            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, password, type}) });
             const data = await res.json();
-            alert(data.message || data.error);
+            notify(data.message || data.error);
             if(data.success) {
                 document.getElementById('loginBox').classList.add('hidden');
                 document.getElementById('dashBox').classList.remove('hidden');
+                document.getElementById('welcomeText').innerText = "স্বাগতম, " + email;
                 loadFiles();
             }
         }
@@ -69,35 +84,27 @@
             const file = document.getElementById('fileInput').files[0];
             const category = document.getElementById('category').value;
             const email = document.getElementById('email').value;
-            if(!file) { alert("দয়া করে ফাইল সিলেক্ট করুন"); return; }
+            if(!file) return notify("দয়া করে ফাইল সিলেক্ট করুন");
             const formData = new FormData();
             formData.append('file', file);
             formData.append('category', category);
             formData.append('email', email);
             const res = await fetch('/api/upload', { method: 'POST', body: formData });
             const data = await res.json();
-            alert(data.message);
+            notify(data.message);
             document.getElementById('fileInput').value = "";
             loadFiles();
         }
 
         async function loadFiles() {
             const email = document.getElementById('email').value;
-            const res = await fetch('/api/files', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email})
-            });
+            const res = await fetch('/api/files', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) });
             const data = await res.json();
             const list = document.getElementById('files');
             list.innerHTML = "";
             if(data.files && data.files.length > 0) {
                 data.files.forEach(f => {
-                    list.innerHTML += `
-                        <li style="margin-bottom: 8px;">
-                            ${f.filename} (${f.category}) 
-                            <a href="/api/download/${f.filename}" style="color: #6366f1; margin-left: 10px;">ডাউনলোড</a>
-                        </li>`;
+                    list.innerHTML += `<li>${f.filename} <a href="/api/download/${f.filename}">📥</a></li>`;
                 });
             } else {
                 list.innerHTML = "<li>কোন ফাইল নেই</li>";
@@ -108,27 +115,16 @@
             const email = document.getElementById('email').value;
             const oldPassword = document.getElementById('oldPass').value;
             const newPassword = document.getElementById('newPass').value;
-            if(!oldPassword || !newPassword) { alert("সবগুলো বক্স পূরণ করুন"); return; }
-            const res = await fetch('/api/change-password', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email, oldPassword, newPassword})
-            });
+            const res = await fetch('/api/change-password', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email, oldPassword, newPassword}) });
             const data = await res.json();
-            alert(data.message || data.error);
-            if(res.ok) { document.getElementById('oldPass').value = ""; document.getElementById('newPass').value = ""; }
+            notify(data.message || data.error);
         }
 
         async function forgot() {
             const email = document.getElementById('email').value;
-            if(!email) { alert("ইমেইল দিন"); return; }
-            const res = await fetch('/api/forgot', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({email})
-            });
+            const res = await fetch('/api/forgot', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email}) });
             const data = await res.json();
-            alert(data.message || data.error);
+            notify(data.message || data.error);
         }
     </script>
 </body>
