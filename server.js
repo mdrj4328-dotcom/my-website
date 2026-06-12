@@ -8,7 +8,7 @@ const User = require('./User');
 
 const app = express();
 
-// Cloudinary কনফিগারেশন
+// ক্লাউডিনারি কনফিগারেশন ☁️
 cloudinary.config(); 
 
 const storage = new CloudinaryStorage({
@@ -31,7 +31,7 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-// আপলোড রাউট
+// আপলোড রাউট 📤
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
@@ -47,7 +47,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// ডাউনলোড রাউট
+// ডাউনলোড রাউট 📥
 app.get('/api/download/:filename', async (req, res) => {
     const user = await User.findOne({ "files.filename": req.params.filename });
     if (!user) return res.status(404).send("ফাইলটি নেই");
