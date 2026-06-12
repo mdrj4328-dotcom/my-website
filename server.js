@@ -6,27 +6,31 @@ const User = require('./User');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-// ফায়ারবেস ইনশিলাইজেশন
+// ফায়ারবেস ইনশিলাইজেশন - এখানে এরর হবে না
+let firebaseInitialized = false;
 try {
     const serviceAccount = require('./serviceAccountKey.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
+    admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    firebaseInitialized = true;
     console.log("ফায়ারবেস সফলভাবে সচল হয়েছে!");
 } catch (err) {
-    console.error("ফায়ারবেস কী (Key) ফাইল পাওয়া যায়নি!");
+    console.error("Firebase Key ফাইলটি গিটহাবে নেই, ফরগেট পাসওয়ার্ড কাজ করবে না।");
 }
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
-// ডাটাবেজ কানেকশন
 mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljcc.mongodb.net/?appName=Cluster0");
 
-// লগইন ও রেজিস্ট্রেশন
+// লগইন ও রেজিস্ট্রেশন (ইমেইল ভ্যালিডেশনসহ)
 app.post('/api/auth', async (req, res) => {
     const { email, password, type } = req.body;
+    // ইমেইল ভ্যালিডেশন
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) return res.status(400).json({ error: "সঠিক ইমেইল দিন!" });
+    if (!password) return res.status(400).json({ error: "পাসওয়ার্ড দিন!" });
+
     try {
         if (type === 'register') {
             const existing = await User.findOne({ email });
@@ -38,58 +42,53 @@ app.post('/api/auth', async (req, res) => {
         const user = await User.findOne({ email, password });
         if (!user) return res.status(401).json({ error: "ভুল ইমেইল বা পাসওয়ার্ড" });
         res.json({ success: true, message: "লগইন সফল!", email: user.email });
-    } catch (err) {
-        res.status(500).json({ error: "সার্ভার এরর" });
-    }
+    } catch (err) { res.status(500).json({ error: "সার্ভার এরর" }); }
 });
 
-// পাসওয়ার্ড পরিবর্তন রাউট
-app.post('/api/change-password', async (req, res) => {
-    const { email, oldPassword, newPassword } = req.body;
-    try {
-        const user = await User.findOne({ email, password: oldPassword });
-        if (!user) return res.status(401).json({ error: "পুরানো পাসওয়ার্ডটি ভুল!" });
-        
-        user.password = newPassword;
-        await user.save();
-        res.json({ message: "পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!" });
-    } catch (err) {
-        res.status(500).json({ error: "সার্ভার এরর" });
-    }
-});
-
-// ফরগেট পাসওয়ার্ড
+// ফরগেট পাসওয়ার্ড (ফায়ারবেস চেকসহ)
 app.post('/api/forgot', async (req, res) => {
-    const { email } = req.body;
+    if (!firebaseInitialized) return res.status(500).json({ error: "ফায়ারবেস কনফিগ করা নেই!" });
     try {
-        const link = await admin.auth().generatePasswordResetLink(email);
-        res.json({ message: "আপনার রিসেট লিংক: " + link });
-    } catch (err) {
-        res.status(404).json({ error: "ইউজার পাওয়া যায়নি বা লিংকে সমস্যা!" });
-    }
+        const link = await admin.auth().generatePasswordResetLink(req.body.email);
+        res.json({ message: "রিসেট লিংক: " + link });
+    } catch (err) { res.status(404).json({ error: "ইউজার পাওয়া যায়নি!" }); }
 });
 
-// ফাইল লিস্ট লোড
-app.post('/api/files', async (req, res) => {
-    const user = await User.findOne({ email: req.body.email });
-    res.json({ files: user ? (user.files || []) : [] });
-});
-
-// ফাইল আপলোড
+// ফাইল আপলোড (নতুন মডেলের path ফিল্ডসহ)
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const { email, category } = req.body;
-    if (!req.file || !email) return res.status(400).json({ message: "ফাইল বা ইমেইল পাওয়া যায়নি!" });
+    if (!req.file || !email) return res.status(400).json({ message: "ফাইল বা ইমেইল পাওয়া যায়নি!" });
     
-    await User.updateOne({ email }, { $push: { files: { filename: req.file.originalname, category } } });
+    await User.updateOne({ email }, { 
+        $push: { files: { filename: req.file.originalname, category, path: req.file.path } } 
+    });
     res.json({ message: "আপলোড সফল!" });
 });
 
-// ফাইল ডাউনলোড রাউট (নতুন এড করা হয়েছে)
-app.get('/api/download/:filename', (req, res) => {
-    const filePath = __dirname + '/uploads/' + req.params.filename;
-    res.download(filePath, (err) => {
-        if (err) res.status(404).send("ফাইলটি সার্ভারে পাওয়া যায়নি!");
-    });
+// ফাইল ডাউনলোড (Path ব্যবহার করে)
+app.get('/api/download/:filename', async (req, res) => {
+    try {
+        const user = await User.findOne({ "files.filename": req.params.filename });
+        if (!user) return res.status(404).send("ফাইলটি ডাটাবেজে নেই!");
+        const file = user.files.find(f => f.filename === req.params.filename);
+        res.download(file.path, file.filename);
+    } catch (err) { res.status(500).send("সার্ভার এরর"); }
+});
+
+// পাসওয়ার্ড পরিবর্তন
+app.post('/api/change-password', async (req, res) => {
+    const { email, oldPassword, newPassword } = req.body;
+    const user = await User.findOne({ email, password: oldPassword });
+    if (!user) return res.status(401).json({ error: "পুরানো পাসওয়ার্ড ভুল!" });
+    user.password = newPassword;
+    await user.save();
+    res.json({ message: "পাসওয়ার্ড পরিবর্তিত!" });
+});
+
+// ফাইল লিস্ট
+app.post('/api/files', async (req, res) => {
+    const user = await User.findOne({ email: req.body.email });
+    res.json({ files: user ? (user.files || []) : [] });
 });
 
 app.listen(process.env.PORT || 10000, () => console.log("পোর্টাল সচল!"));
