@@ -8,8 +8,7 @@ const User = require('./User');
 
 const app = express();
 
-// ক্লাউডিনারি কনফিগারেশন ☁️
-// এটি এখন এনভায়রনমেন্ট ভেরিয়েবল (CLOUDINARY_URL) থেকে কনফিগারেশন গ্রহণ করবে
+// ক্লাউডিনারি কনফিগারেশন
 cloudinary.config({ 
     cloudinary_url: process.env.CLOUDINARY_URL 
 }); 
@@ -34,7 +33,7 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-// আপলোড রাউট 📤
+// আপলোড রাউট
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
@@ -50,7 +49,19 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// ডাউনলোড রাউট 📥
+// সাপোর্ট মেসেজ রাউট 📨
+app.post('/api/support', async (req, res) => {
+    const { email, message } = req.body;
+    try {
+        await bot.sendMessage(myChatId, `ইমেইল: ${email}\nবার্তা: ${message}`);
+        res.json({ message: "মেসেজ পাঠানো হয়েছে!" });
+    } catch (err) {
+        console.error("Telegram Error:", err);
+        res.status(500).json({ message: "মেসেজ পাঠাতে সমস্যা হয়েছে" });
+    }
+});
+
+// ডাউনলোড রাউট
 app.get('/api/download/:filename', async (req, res) => {
     const user = await User.findOne({ "files.filename": req.params.filename });
     if (!user) return res.status(404).send("ফাইলটি নেই");
