@@ -9,9 +9,9 @@ const User = require('./User');
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-// টেলিগ্রাম বট কনফিগারেশন
+// টেলিগ্রাম বট কনফিগারেশন - এখানে polling: false করে দিয়েছি
 const token = '8528728150:AAFgQR0EQH-dyK4DjHyivk3gNri9H7uyO_I';
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: false }); 
 const myChatId = '8748825027';
 
 app.use(express.json());
@@ -26,9 +26,11 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
 app.post('/api/support', async (req, res) => {
     const { email, message } = req.body;
     try {
+        // polling false থাকলেও sendMessage কাজ করবে
         await bot.sendMessage(myChatId, `📩 নতুন মেসেজ!\nইউজার: ${email}\nবার্তা: ${message}`);
         res.json({ message: "মেসেজ পাঠানো হয়েছে!" });
     } catch (error) {
+        console.error("Telegram Error:", error);
         res.status(500).json({ message: "মেসেজ পাঠাতে সমস্যা হয়েছে" });
     }
 });
