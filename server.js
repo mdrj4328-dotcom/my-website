@@ -5,15 +5,16 @@ const path = require('path');
 const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api');
 const User = require('./User');
-// ১. Cloudinary প্যাকেজগুলো যুক্ত করা হয়েছে
+// Cloudinary এর জন্য প্রয়োজনীয় লাইব্রেরি
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 
-// ২. Cloudinary কনফিগারেশন (আপনার রেন্ডারের ENV থেকে অটোমেটিক নিয়ে নেবে)
+// Cloudinary কনফিগারেশন (আপনার রেন্ডার ENV থেকে অটোমেটিক লোড হবে)
 cloudinary.config(); 
 
+// Cloudinary স্টোরেজ সেটআপ
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -44,12 +45,12 @@ app.post('/api/support', async (req, res) => {
     }
 });
 
-// আপলোড রাউট - Cloudinary এর পাথ ব্যবহার করা হয়েছে
+// আপলোড রাউট - Cloudinary ব্যবহার করা হয়েছে
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
-    const fileUrl = req.file.path; // এটি এখন ক্লাউডিনারি লিংক
+    const fileUrl = req.file.path; // ক্লাউডিনারি লিংক
 
     try {
         const result = await User.updateOne(
@@ -67,13 +68,14 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// ডাউনলোড রাউট (আপডেট করা হয়েছে যাতে ক্লাউড লিংক থেকে ফাইল খোলে)
+// ডাউনলোড রাউট
 app.get('/api/download/:filename', async (req, res) => {
     try {
         const user = await User.findOne({ "files.filename": req.params.filename });
         if (!user) return res.status(404).send("ফাইলটি নেই");
         const file = user.files.find(f => f.filename === req.params.filename);
-        // যদি এটি ক্লাউড লিঙ্ক হয়, তবে রিডাইরেক্ট করবে
+        
+        // যদি ফাইলটি অনলাইন লিঙ্ক হয় (Cloudinary)
         if (file.path.startsWith('http')) {
             res.redirect(file.path);
         } else {
@@ -90,7 +92,7 @@ app.delete('/api/delete/:filename', async (req, res) => {
         const user = await User.findOne({ "files.filename": req.params.filename });
         if (user) {
             const file = user.files.find(f => f.filename === req.params.filename);
-            // লোকাল ফাইল থাকলে ডিলিট করবে, না থাকলে ক্লাউড লিংক ইগনোর করবে
+            // লোকাল ফাইল থাকলে ডিলিট করবে
             if (file && !file.path.startsWith('http') && fs.existsSync(file.path)) {
                 fs.unlinkSync(file.path);
             }
