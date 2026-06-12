@@ -93,7 +93,11 @@
             list.innerHTML = "";
             if(data.files && data.files.length > 0) {
                 data.files.forEach(f => {
-                    list.innerHTML += `<li>${f.filename} (${f.category})</li>`;
+                    list.innerHTML += `
+                        <li style="margin-bottom: 8px;">
+                            ${f.filename} (${f.category}) 
+                            <a href="/api/download/${f.filename}" style="color: #6366f1; margin-left: 10px;">ডাউনলোড</a>
+                        </li>`;
                 });
             } else {
                 list.innerHTML = "<li>কোন ফাইল নেই</li>";
