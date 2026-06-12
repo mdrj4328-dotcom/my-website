@@ -31,18 +31,9 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-app.post('/api/support', async (req, res) => {
-    const { email, message } = req.body;
-    try {
-        await bot.sendMessage(myChatId, `📩 নতুন মেসেজ!\nইউজার: ${email}\nবার্তা: ${message}`);
-        res.json({ message: "মেসেজ পাঠানো হয়েছে!" });
-    } catch (error) {
-        res.status(500).json({ message: "মেসেজ পাঠাতে সমস্যা হয়েছে" });
-    }
-});
-
+// আপলোড রাউট
 app.post('/api/upload', upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
+    if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
 
     try {
@@ -52,26 +43,16 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         );
         res.json({ message: "আপলোড সফল!" });
     } catch (err) {
-        res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
+        res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
     }
 });
 
+// ডাউনলোড রাউট
 app.get('/api/download/:filename', async (req, res) => {
     const user = await User.findOne({ "files.filename": req.params.filename });
     if (!user) return res.status(404).send("ফাইলটি নেই");
     const file = user.files.find(f => f.filename === req.params.filename);
     res.redirect(file.path);
-});
-
-app.delete('/api/delete/:filename', async (req, res) => {
-    await User.updateOne({ "files.filename": req.params.filename }, { $pull: { files: { filename: req.params.filename } } });
-    res.json({ message: "মুছে ফেলা হয়েছে" });
-});
-
-app.post('/api/files', async (req, res) => {
-    const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
-    const user = await User.findOne({ email: userEmail });
-    res.json({ files: user ? user.files : [] });
 });
 
 const PORT = process.env.PORT || 10000;
