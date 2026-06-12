@@ -45,14 +45,12 @@
         const firebaseConfig = { apiKey: "AIzaSyBleLrL4M-PuXieI_sYwjORch0Ni_Gc4g8", authDomain: "samir-login.firebaseapp.com", projectId: "samir-login", storageBucket: "samir-login.firebasestorage.app", messagingSenderId: "684678891663", appId: "1:684678891663:web:d1cc4ca1b95036b6ffc8fa" };
         firebase.initializeApp(firebaseConfig);
 
-        // ফিচার ১: থিম সেভার
         if(localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
             localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
         }
 
-        // ফিচার ৯: অটো-লগআউট সেফটি
         setTimeout(() => { if(!document.getElementById('loginBox').classList.contains('hidden')) logout(); }, 1800000);
 
         function googleLogin() {
@@ -102,20 +100,20 @@
             list.innerHTML = "";
             if(data.files) {
                 data.files.forEach(f => {
-                    // ফিচার ২ ও ৭: ডিলিট বাটন ও প্রিভিউ সুবিধা
+                    // এখানে সংশোধন করেছি: এনকোড করে দেওয়া হয়েছে
                     list.innerHTML += `<li>${f.filename} 
                         <div>
-                            <button onclick="window.open('/api/download/${f.filename}')" style="padding:5px; background:green">👁️</button>
-                            <button onclick="deleteFile('${f.filename}')" style="padding:5px; background:red">❌</button>
+                            <button onclick="window.open('/api/download/${encodeURIComponent(f.filename)}')" style="padding:5px; background:green">📥</button>
+                            <button onclick="deleteFile('${encodeURIComponent(f.filename)}')" style="padding:5px; background:red">❌</button>
                         </div>
                     </li>`;
                 });
             }
         }
 
-        async function deleteFile(filename) {
+        async function deleteFile(encodedFilename) {
             if(!confirm("মুছে ফেলতে চান?")) return;
-            const res = await fetch(`/api/delete/${filename}`, { method: 'DELETE' });
+            const res = await fetch(`/api/delete/${encodedFilename}`, { method: 'DELETE' });
             const data = await res.json();
             alert(data.message);
             loadFiles();
