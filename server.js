@@ -9,7 +9,10 @@ const User = require('./User');
 const app = express();
 
 // ক্লাউডিনারি কনফিগারেশন ☁️
-cloudinary.config(); 
+// এটি এখন এনভায়রনমেন্ট ভেরিয়েবল (CLOUDINARY_URL) থেকে কনফিগারেশন গ্রহণ করবে
+cloudinary.config({ 
+    cloudinary_url: process.env.CLOUDINARY_URL 
+}); 
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
