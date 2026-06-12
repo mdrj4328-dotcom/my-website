@@ -71,7 +71,6 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             if(!email || !password) return alert("ইমেইল ও পাসওয়ার্ড দিন");
-            
             try {
                 if(type === 'register') await firebase.auth().createUserWithEmailAndPassword(email, password);
                 else await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -118,7 +117,15 @@
             const list = document.getElementById('files').getElementsByTagName('li');
             for(let l of list) l.style.display = l.textContent.toLowerCase().includes(q) ? "" : "none";
         }
-        function forgot() { alert("পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে।"); }
+
+        async function forgot() {
+            const email = document.getElementById('email').value;
+            if(!email) return alert("ইমেইল লিখুন");
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                alert("রিসেট লিংক পাঠানো হয়েছে!");
+            } catch(e) { alert(e.message); }
+        }
     </script>
 </body>
 </html>
