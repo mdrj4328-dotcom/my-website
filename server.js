@@ -8,7 +8,7 @@ const User = require('./User');
 
 const app = express();
 
-// Cloudinary কনফিগারেশন
+// ক্লাউডিনারি কনফিগারেশন
 cloudinary.config(); 
 
 const storage = new CloudinaryStorage({
