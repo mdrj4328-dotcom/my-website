@@ -14,13 +14,14 @@ try {
     });
     console.log("ফায়ারবেস সফলভাবে সচল হয়েছে!");
 } catch (err) {
-    console.error("ফায়ারবেস কী (Key) ফাইল পাওয়া যায়নি!");
+    console.error("ফায়ারবেস কী (Key) ফাইল পাওয়া যায়নি! গিটহাবে ফাইলটি আপলোড করুন।");
 }
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // ফর্ম ডাটা পড়ার জন্য জরুরি
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
+// ডাটাবেজ কানেকশন
 mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljcc.mongodb.net/?appName=Cluster0");
 
 // লগইন ও রেজিস্ট্রেশন
@@ -42,7 +43,7 @@ app.post('/api/auth', async (req, res) => {
     }
 });
 
-// পাসওয়ার্ড পরিবর্তন রাউট (নতুন যোগ করা হয়েছে)
+// পাসওয়ার্ড পরিবর্তন রাউট
 app.post('/api/change-password', async (req, res) => {
     const { email, oldPassword, newPassword } = req.body;
     try {
@@ -68,15 +69,17 @@ app.post('/api/forgot', async (req, res) => {
     }
 });
 
-// ফাইল লিস্ট ও আপলোড
+// ফাইল লিস্ট লোড
 app.post('/api/files', async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     res.json({ files: user ? (user.files || []) : [] });
 });
 
+// ফাইল আপলোড (বানান ভুল ঠিক করা হয়েছে)
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const { email, category } = req.body;
     if (!req.file || !email) return res.status(400).json({ message: "ফাইল বা ইমেইল পাওয়া যায়নি!" });
+    
     await User.updateOne({ email }, { $push: { files: { filename: req.file.originalname, category } } });
     res.json({ message: "আপলোড সফল!" });
 });
