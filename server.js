@@ -14,7 +14,7 @@ try {
     });
     console.log("ফায়ারবেস সফলভাবে সচল হয়েছে!");
 } catch (err) {
-    console.error("ফায়ারবেস কী (Key) ফাইল পাওয়া যায়নি! গিটহাবে ফাইলটি আপলোড করুন।");
+    console.error("ফায়ারবেস কী (Key) ফাইল পাওয়া যায়নি!");
 }
 
 app.use(express.json());
@@ -75,7 +75,7 @@ app.post('/api/files', async (req, res) => {
     res.json({ files: user ? (user.files || []) : [] });
 });
 
-// ফাইল আপলোড (বানান ভুল ঠিক করা হয়েছে)
+// ফাইল আপলোড
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     const { email, category } = req.body;
     if (!req.file || !email) return res.status(400).json({ message: "ফাইল বা ইমেইল পাওয়া যায়নি!" });
@@ -84,4 +84,12 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     res.json({ message: "আপলোড সফল!" });
 });
 
-app.listen(10000, () => console.log("পোর্টাল সচল!"));
+// ফাইল ডাউনলোড রাউট (নতুন এড করা হয়েছে)
+app.get('/api/download/:filename', (req, res) => {
+    const filePath = __dirname + '/uploads/' + req.params.filename;
+    res.download(filePath, (err) => {
+        if (err) res.status(404).send("ফাইলটি সার্ভারে পাওয়া যায়নি!");
+    });
+});
+
+app.listen(process.env.PORT || 10000, () => console.log("পোর্টাল সচল!"));
