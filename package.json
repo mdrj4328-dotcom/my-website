@@ -13,7 +13,7 @@
     "nodemailer": "^6.9.1",
     "firebase-admin": "^11.0.0",
     "node-telegram-bot-api": "^0.66.0",
-    "cloudinary": "^2.0.0",
+    "cloudinary": "^1.41.0",
     "multer-storage-cloudinary": "^4.0.0"
   }
 }
