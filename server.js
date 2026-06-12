@@ -8,7 +8,6 @@ const User = require('./User');
 
 const app = express();
 
-// ১. Multer স্টোরেজ কনফিগারেশন (যাতে ফাইল সঠিকভাবে নাম পায়)
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const dir = 'uploads/';
@@ -21,7 +20,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// টেলিগ্রাম বট কনফিগারেশন
 const token = '8528728150:AAFgQR0EQH-dyK4DjHyivk3gNri9H7uyO_I';
 const bot = new TelegramBot(token, { polling: false }); 
 const myChatId = '8748825027';
@@ -29,12 +27,10 @@ const myChatId = '8748825027';
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ডাটাবেস কানেকশন
 mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljcc.mongodb.net/?appName=Cluster0")
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-// সাপোর্ট রাউট
 app.post('/api/support', async (req, res) => {
     const { email, message } = req.body;
     try {
@@ -45,27 +41,29 @@ app.post('/api/support', async (req, res) => {
     }
 });
 
-// আপলোড রাউট (সংশোধিত ও উন্নত)
+// আপলোড রাউট - এখানে ইমেইল ফিল্টার আরও উন্নত করা হয়েছে
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
     
+    // ইমেইল ক্লিন করা হচ্ছে (স্পেস সরানো এবং ছোট হাতের অক্ষর করা)
+    const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
+
     try {
         const result = await User.updateOne(
-            { email: req.body.email }, 
+            { email: userEmail }, 
             { $push: { files: { filename: req.file.originalname, path: req.file.path } } }
         );
         
-        if (result.modifiedCount > 0) {
+        if (result.matchedCount > 0) { // modifiedCount এর বদলে matchedCount ব্যবহার করা ভালো
             res.json({ message: "আপলোড সফল!" });
         } else {
-            res.status(404).json({ message: "ইউজার খুঁজে পাওয়া যায়নি" });
+            res.status(404).json({ message: `ইউজার খুঁজে পাওয়া যায়নি: ${userEmail}` });
         }
     } catch (err) {
         res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
     }
 });
 
-// ডাউনলোড রাউট
 app.get('/api/download/:filename', async (req, res) => {
     try {
         const user = await User.findOne({ "files.filename": req.params.filename });
@@ -77,7 +75,6 @@ app.get('/api/download/:filename', async (req, res) => {
     }
 });
 
-// ডিলিট রাউট
 app.delete('/api/delete/:filename', async (req, res) => {
     try {
         const user = await User.findOne({ "files.filename": req.params.filename });
@@ -90,13 +87,13 @@ app.delete('/api/delete/:filename', async (req, res) => {
             res.status(404).json({ message: "ফাইলটি খুঁজে পাওয়া যায়নি" });
         }
     } catch (err) {
-        res.status(500).json({ message: "ডিলিট করতে সমস্যা হয়েছে" });
+        res.status(500).json({ message: "ডিলিট করতে সমস্যা হয়েছে" });
     }
 });
 
-// ফাইল লিস্ট রাউট
 app.post('/api/files', async (req, res) => {
-    const user = await User.findOne({ email: req.body.email });
+    const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
+    const user = await User.findOne({ email: userEmail });
     res.json({ files: user ? user.files : [] });
 });
 
