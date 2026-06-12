@@ -8,9 +8,12 @@ const User = require('./User');
 
 const app = express();
 
-// ক্লাউডিনারি কনফিগারেশন
+// ১. ক্লাউডিনারি কনফিগারেশন আপডেট ☁️
+// সরাসরি process.env.CLOUDINARY_URL ব্যবহার না করে আলাদাভাবে কনফিগার করুন
 cloudinary.config({ 
-    cloudinary_url: process.env.CLOUDINARY_URL 
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.CLOUD_API_KEY, 
+    api_secret: process.env.CLOUD_API_SECRET 
 }); 
 
 const storage = new CloudinaryStorage({
@@ -33,9 +36,10 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-// আপলোড রাউট
+// ২. ফাইল আপলোড রাউট (এরর হ্যান্ডলিং সহ) 📤
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
+    
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
 
     try {
@@ -45,6 +49,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         );
         res.json({ message: "আপলোড সফল!" });
     } catch (err) {
+        console.error("Upload Error Details:", err); // এটি লগে বিস্তারিত এরর দেখাবে
         res.status(500).json({ message: "ডাটাবেসে সেভ করতে সমস্যা হয়েছে" });
     }
 });
@@ -61,7 +66,7 @@ app.post('/api/support', async (req, res) => {
     }
 });
 
-// ডাউনলোড রাউট
+// ডাউনলোড রাউট 📥
 app.get('/api/download/:filename', async (req, res) => {
     const user = await User.findOne({ "files.filename": req.params.filename });
     if (!user) return res.status(404).send("ফাইলটি নেই");
