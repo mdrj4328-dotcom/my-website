@@ -8,7 +8,7 @@ const User = require('./User');
 
 const app = express();
 
-// ক্লাউডিনারি কনফিগারেশন
+// Cloudinary কনফিগারেশন
 cloudinary.config(); 
 
 const storage = new CloudinaryStorage({
@@ -31,7 +31,6 @@ mongoose.connect("mongodb+srv://mdsamirkhan023_db_user:Samir4876@cluster0.lwxljc
     .then(() => console.log("Database Connected"))
     .catch(err => console.error("Database Error:", err));
 
-// সাপোর্ট রাউট
 app.post('/api/support', async (req, res) => {
     const { email, message } = req.body;
     try {
@@ -42,10 +41,8 @@ app.post('/api/support', async (req, res) => {
     }
 });
 
-// আপলোড রাউট
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "ফাইল পাওয়া যায়নি" });
-    
     const userEmail = req.body.email ? req.body.email.trim().toLowerCase() : "";
 
     try {
@@ -59,7 +56,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// ডাউনলোড রাউট
 app.get('/api/download/:filename', async (req, res) => {
     const user = await User.findOne({ "files.filename": req.params.filename });
     if (!user) return res.status(404).send("ফাইলটি নেই");
@@ -67,7 +63,6 @@ app.get('/api/download/:filename', async (req, res) => {
     res.redirect(file.path);
 });
 
-// ডিলিট রাউট
 app.delete('/api/delete/:filename', async (req, res) => {
     await User.updateOne({ "files.filename": req.params.filename }, { $pull: { files: { filename: req.params.filename } } });
     res.json({ message: "মুছে ফেলা হয়েছে" });
